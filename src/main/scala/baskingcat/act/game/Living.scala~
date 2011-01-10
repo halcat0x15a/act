@@ -1,0 +1,16 @@
+package baskingcat.act.game
+
+abstract class Living extends GameObject {
+
+  val life: Float
+
+  val invincible: Boolean = false
+
+  def damaged(damagable: Set[Damagable]) = {
+    life - (damagable find (hit) match {
+      case Some(damagable) => damagable.power
+      case None => 0f
+    })
+  }
+
+}
