@@ -26,7 +26,7 @@ object Resource {
 
   lazy val stages = List(XML.loadFile(path + "stages/stage.xml"))
 
-  lazy val imageDataMap: Map[String, ImageData] = Map(
+  lazy val imageDataMap = Map(
     "miku" -> new ImageData(1 to 14 map (new StringBuilder("miku/miku").append(_).append(".png").toString), false),
   "supu" -> new ImageData(List("", "r", "g", "b") map (new StringBuilder("supu/supu").append(_).append(".png").toString), false),
     "block" -> new ImageData("blocks/block.png", true),
@@ -40,7 +40,7 @@ object Resource {
 )
 
   lazy val textures = Map(
-    "title" -> Textures.load(path + "backgrounds/title.png")
+    "title" -> Texture.load(path + "backgrounds/title.png")
 )
 
 }

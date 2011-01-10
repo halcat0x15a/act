@@ -5,7 +5,7 @@ import baskingcat.act._
 class Block(
   override val id: Int,
   private val t: Block.Type.Value,
-  override val textures: Textures,
+  override val textures: Array[Texture],
   override val x: Float,
   override val y: Float,
   override val width: Float,

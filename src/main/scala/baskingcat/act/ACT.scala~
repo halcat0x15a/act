@@ -48,8 +48,7 @@ final object ACT extends AbstractGame {
     glEnableClientState(GL_VERTEX_ARRAY)
     glEnableClientState(GL_TEXTURE_COORD_ARRAY)
     println(glGetString(GL_VERSION))
-    println("VBO: " + (GLContext.getCapabilities.GL_ARB_vertex_buffer_object || GLContext.getCapabilities.OpenGL15))
-    println("FBO: " + (GLContext.getCapabilities.GL_EXT_framebuffer_object || GLContext.getCapabilities.OpenGL30))
+    println("VBO: " + GLContext.getCapabilities.
   }
 
   @throws(classOf[LWJGLException])
