@@ -34,26 +34,31 @@ abstract class ACTObject {
 
   private lazy val texCoords = BufferUtils.createFloatBuffer(8).put(Array[Float](0, vTexRatio, 0, 0, hTexRatio, 0, hTexRatio, vTexRatio)).flip.asInstanceOf[FloatBuffer]
 
-  private lazy val buffers = {
-    val buffers = BufferUtils.createIntBuffer(2)
-    if (capabilities.OpenGL15) {
-      glGenBuffers(buffers)
-      glBindBuffer(GL_ARRAY_BUFFER, buffers.get(0))
-      glBufferData(GL_ARRAY_BUFFER, verteciesSize + texCoordsSize, GL_STATIC_DRAW)
-      glBufferSubData(GL_ARRAY_BUFFER, 0, vertecies)
-      glBufferSubData(GL_ARRAY_BUFFER, verteciesSize, texCoords)
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.get(1))
-      glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW)
-    } else if (capabilities.GL_ARB_vertex_buffer_object) {
-      glGenBuffersARB(buffers)
-      glBindBufferARB(GL_ARRAY_BUFFER_ARB, buffers.get(0))
-      glBufferDataARB(GL_ARRAY_BUFFER_ARB, verteciesSize + texCoordsSize, GL_STATIC_DRAW_ARB)
-      glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, 0, vertecies)
-      glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, verteciesSize, texCoords)
-      glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, buffers.get(1))
-      glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indices, GL_STATIC_DRAW_ARB)
+  private var buffersMemo: Option[IntBuffer] = None
+
+  private lazy val buffers: IntBuffer = {
+    if (!buffersMemo.isDefined) {
+      val buffers = BufferUtils.createIntBuffer(2)
+      if (capabilities.OpenGL15) {
+        glGenBuffers(buffers)
+        glBindBuffer(GL_ARRAY_BUFFER, buffers.get(0))
+        glBufferData(GL_ARRAY_BUFFER, verteciesSize + texCoordsSize, GL_STATIC_DRAW)
+        glBufferSubData(GL_ARRAY_BUFFER, 0, vertecies)
+        glBufferSubData(GL_ARRAY_BUFFER, verteciesSize, texCoords)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.get(1))
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW)
+      } else if (capabilities.GL_ARB_vertex_buffer_object) {
+        glGenBuffersARB(buffers)
+        glBindBufferARB(GL_ARRAY_BUFFER_ARB, buffers.get(0))
+        glBufferDataARB(GL_ARRAY_BUFFER_ARB, verteciesSize + texCoordsSize, GL_STATIC_DRAW_ARB)
+        glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, 0, vertecies)
+        glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, verteciesSize, texCoords)
+        glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, buffers.get(1))
+        glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indices, GL_STATIC_DRAW_ARB)
+      }
+      buffersMemo = Some(buffers)
     }
-    buffers
+    buffersMemo.get
   }
 
   private lazy val verteciesSize = 4 * 2 * 4
@@ -77,16 +82,16 @@ abstract class ACTObject {
       glVertexPointer(2, GL11.GL_FLOAT, 0, 0)
       glTexCoordPointer(2, GL11.GL_FLOAT, 0, verteciesSize)
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.get(1))
-      glDrawRangeElements(GL_QUADS, 0, 3, 4, GL_UNSIGNED_INT, 0)      
+      glDrawRangeElements(GL_QUADS, 0, 3, 4, GL_UNSIGNED_INT, 0)
     } else if (capabilities.GL_ARB_vertex_buffer_object) {
       glBindBufferARB(GL_ARRAY_BUFFER_ARB, buffers.get(0))
       glVertexPointer(2, GL11.GL_FLOAT, 0, 0)
       glTexCoordPointer(2, GL11.GL_FLOAT, 0, verteciesSize)
       glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, buffers.get(1))
       if (capabilities.OpenGL12) {
-	glDrawRangeElements(GL_QUADS, 0, 3, 4, GL_UNSIGNED_INT, 0)
+        glDrawRangeElements(GL_QUADS, 0, 3, 4, GL_UNSIGNED_INT, 0)
       } else {
-	glDrawElements(GL_QUADS, 4, GL_UNSIGNED_INT, 0)
+        glDrawElements(GL_QUADS, 4, GL_UNSIGNED_INT, 0)
       }
     } else if (capabilities.OpenGL12) {
       glVertexPointer(2, 0, vertecies)
@@ -116,7 +121,7 @@ abstract class ACTObject {
     println(getClass.getName)
     glDeleteBuffers(buffers)
     textures.delete()
-  } 
+  }
 
   override def finalize() {
     delete()

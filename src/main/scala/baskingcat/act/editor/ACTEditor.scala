@@ -4,6 +4,7 @@ import baskingcat.act._
 import java.awt.{ Color, TexturePaint }
 import java.awt.geom._
 import java.awt.image._
+import java.io.{ File, PrintWriter }
 import javax.swing.{ WindowConstants }
 import actors.Actor._
 import collection._
@@ -21,12 +22,17 @@ object ACTEditor extends SimpleSwingApplication {
   val gridSize = 32
   val vLine = (width / gridSize).toInt
   val hLine = (height / gridSize).toInt
-  var dataSet = mutable.LinkedHashSet.empty[Data]
+  val dataSet = mutable.LinkedHashSet.empty[Data]
+  val fileChooser = {
+    val fileChooser = new FileChooser
+    fileChooser.multiSelectionEnabled = false
+    fileChooser
+  }
   var undoStack: mutable.Stack[Data] = mutable.Stack()
   var redoStack: mutable.Stack[Data] = mutable.Stack()
   var selectedDataSet = mutable.LinkedHashSet.empty[Data]
-  var fileName = "stage.xml"
-  var saved = true
+  var file: Option[File] = None
+  val saved = dataSet
 
   override def top = new MainFrame {
     peer.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE)
@@ -38,16 +44,14 @@ object ACTEditor extends SimpleSwingApplication {
           override def apply() = newFile()
         })
         contents += new MenuItem(new Action("開く(O)...") {
-          override def apply() {
-          }
+          override def apply() = openFile()
         })
         contents += new Separator()
         contents += new MenuItem(new Action("保存(S)") {
-          override def apply() = save()
+          override def apply() = saveFile(file)
         })
         contents += new MenuItem(new Action("別名保存(A)...") {
-          override def apply() {
-          }
+          override def apply() = saveAs()
         })
         contents += new Separator()
         contents += new MenuItem(new Action("終了(Q)") {
@@ -133,13 +137,15 @@ object ACTEditor extends SimpleSwingApplication {
                 val init = dataSet - last
                 val newData = new Data(last, last.x, last.y, last.imageData.width + (gridX - last.x), last.imageData.height + (last.y - gridY))
                 if (init forall (data => !data.intersects(newData))) {
-                  dataSet = init + newData
+                  dataSet.clear()
+                  dataSet ++= init + newData
                 }
               }
             } else {
               val last = selectedDataSet.last
               val movedData = selectedDataSet map (data => new Data(data, data.x + (gridX - last.x), data.y + (gridY - last.y), last.width, last.height))
-              dataSet = dataSet -- selectedDataSet ++ movedData
+              dataSet.clear()
+              dataSet ++= dataSet -- selectedDataSet ++ movedData
               selectedDataSet = movedData
             }
             repaint()
@@ -180,7 +186,8 @@ object ACTEditor extends SimpleSwingApplication {
       horizontalScrollBar.maximum = maxWidth
       verticalScrollBar.value = maxHeight
     }
-    contents = scrollPane
+    val toolBox = new ToolBox
+    contents = new SplitPane(Orientation.Vertical, toolBox, scrollPane)
     centerOnScreen()
     actor {
       while (true) {
@@ -188,16 +195,15 @@ object ACTEditor extends SimpleSwingApplication {
         Thread.sleep(100)
       }
     }
-    val toolBox = new ToolBox
   }
 
   override def quit() {
-    if (saved) {
+    if (isSaved) {
       super.quit()
     } else {
       Dialog.showConfirmation(null, "保存しますか？", "", Dialog.Options.YesNoCancel, Dialog.Message.Warning) match {
         case Dialog.Result.Ok => {
-          save()
+          saveFile(file)
           super.quit()
         }
         case Dialog.Result.No => super.quit()
@@ -211,35 +217,99 @@ object ACTEditor extends SimpleSwingApplication {
     selectedDataSet.clear()
     undoStack.clear()
     redoStack.clear()
-    fileName = ""
-    saved = true
+    saved.clear()
+    file = None
   }
 
-  def save() {
-    implicit def nodeToInt(node: Node) = node.text.toInt
-    val dataList = dataSet.toList
-    val dataElemList = dataList map (_.toXML)
-    val imagesList = dataElemList map (e => e \ "images")
-    val imagesSet = imagesList.toSet
-    val imagesIdMap = imagesSet.toList zip imagesSet.toList.indices flatMap (_ match {
-      case (images, index) => Map(images -> new StringBuilder("images").append(index).toString)
-    }) toMap
-    val imagesElemSet = imagesSet zip imagesIdMap.values map (_ match {
-      case (images, id) => <images id={ id } width={ images \ "@width" } height={ images \ "@height" } repeat={ images \ "@repeat" }>{ images \ "image" }</images>
-    })
-    val newDataElemList = dataList zip imagesList map (_ match {
-      case (data, images) => data.toXML(imagesIdMap(images))
-    })
-    val node = <act width={ width.toString } height={ height.toString }>
-                 <defs>
-                   { imagesElemSet }
-                 </defs>
-                 { newDataElemList }
-               </act>
-    XML.save(fileName, Utility.trim(node))
+  def openFile() {
+    def open() {
+      fileChooser.showOpenDialog(null) match {
+        case FileChooser.Result.Approve => {
+          implicit def nodeToString(node: NodeSeq) = node.text
+          implicit def nodeToInt(node: NodeSeq) = node.text.toInt
+          newFile()
+          val file = fileChooser.selectedFile
+          val xml = XML.loadFile(file.getPath)
+          val imageDataMap = (xml \ "defs" \ "images" map { images =>
+            val image = (images \ "image" map { image =>
+              new BufferedImage(images \ "@width", images \ "@height", BufferedImage.TYPE_4BYTE_ABGR)
+            }).toArray
+            ((images \ "@id").text, new ImageData(image, (images \ "@repeat").text.toBoolean))
+          }).toMap
+          dataSet ++= xml \ "data" map { data =>
+            new Data(data \ "@type", imageDataMap((data \ "@images").text.substring(1)), data \ "@x", data \ "@y", data \ "@width", data \ "@height")
+          }
+        }
+        case FileChooser.Result.Cancel =>
+        case FileChooser.Result.Error =>
+      }
+    }
+    if (isSaved) {
+      open()
+    } else {
+      Dialog.showConfirmation(null, "保存しますか？", "", Dialog.Options.YesNoCancel) match {
+        case Dialog.Result.Yes => {
+          saveFile(file)
+          open()
+        }
+        case Dialog.Result.No => open()
+      }
+    }
   }
 
-  def saveAs(fileName: String) {
+  def saveFile(file: Option[File]) {
+    file match {
+      case Some(file) => {
+        implicit def nodeToInt(node: Node) = node.text.toInt
+        val dataList = dataSet.toList
+        val dataElemList = dataList map (_.toXML)
+        val imagesList = dataElemList map (e => e \ "images")
+        val imagesSet = imagesList.toSet
+        val imagesIdMap = imagesSet.toList zip imagesSet.toList.indices flatMap (_ match {
+          case (images, index) => Map(images -> new StringBuilder("images").append(index).toString)
+        }) toMap
+        val imagesElemSet = imagesSet zip imagesIdMap.values map (_ match {
+          case (images, id) => <images id={ id } width={ images \ "@width" } height={ images \ "@height" } repeat={ images \ "@repeat" }>{ images \ "image" }</images>
+        })
+        val newDataElemList = dataList zip imagesList map (_ match {
+          case (data, images) => data.toXML(imagesIdMap(images))
+        })
+        val node = <act width={ width.toString } height={ height.toString }>
+                     <defs>
+                       { imagesElemSet }
+                     </defs>
+                     { newDataElemList }
+                   </act>
+        try {
+          XML.write(new PrintWriter(file), Utility.trim(node), "UTF-8", true, null)
+        } catch {
+          case e => Dialog.showMessage(null, "ファイルを保存できませんでした。", "")
+        }
+      }
+      case None => saveAs()
+    }
+  }
+
+  def saveAs() {
+    fileChooser.showSaveDialog(null) match {
+      case FileChooser.Result.Approve => {
+        val file = fileChooser.selectedFile
+        val name = file.getName
+        if (name.nonEmpty) {
+          val result = if (file.exists) {
+            Dialog.showConfirmation(null, "上書きしますか？", "", Dialog.Options.YesNo)
+          } else {
+            Dialog.Result.Yes
+          }
+          result match {
+            case Dialog.Result.Yes => saveFile(Some(file))
+            case Dialog.Result.No =>
+          }
+        }
+      }
+      case FileChooser.Result.Cancel =>
+      case FileChooser.Result.Error =>
+    }
   }
 
   def undo() {
@@ -266,6 +336,8 @@ object ACTEditor extends SimpleSwingApplication {
     dataSet --= selectedDataSet
     selectedDataSet.clear()
   }
+
+  def isSaved = saved == dataSet
 
 }
 

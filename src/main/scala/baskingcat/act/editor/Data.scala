@@ -30,6 +30,6 @@ class Data(private val _type: String, val imageData: ImageData, val x: Int, val 
                 </images>
               </data>
 
-  def toXML(id: String) = <data id={ hashCode } type={ _type } x={ x } y={ y - height } width={ width } height={ height } images={ new StringBuilder("url(#").append(id).append(")").toString }></data>
+  def toXML(id: String) = <data id={ hashCode } type={ _type } x={ x } y={ y - height } width={ width } height={ height } images={ new StringBuilder("#").append(id).toString }></data>
 
 }

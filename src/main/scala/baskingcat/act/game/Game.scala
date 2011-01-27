@@ -1,17 +1,18 @@
 package baskingcat.act.game
 
-import org.lwjgl._
-import org.lwjgl.opengl.GL11._
-import org.lwjgl.util.Timer
-import org.lwjgl.util.glu.GLU._
 import com.baskingcat.game._
 import baskingcat.act._
 import clear.Clear
 import title.Title
 import actors.Actor._
+import util.continuations._
 import math._
 import reflect.Manifest
 import xml._
+import org.lwjgl._
+import org.lwjgl.opengl.GL11._
+import org.lwjgl.util.Timer
+import org.lwjgl.util.glu.GLU._
 
 final class Game(private val data: Set[GameObject], entries: Set[GameObject], private val goal: Float, private val timer: Timer) extends Scene {
 
@@ -23,15 +24,18 @@ final class Game(private val data: Set[GameObject], entries: Set[GameObject], pr
 
   def this(game: Game, entries: Set[GameObject]) = this(game.data, entries, game.goal, game.timer)
 
+  // Player(id, textures, x, y, width, height, vx, vy, direction, life)
+
   override def logic(controller: GameController): Scene = {
+    val n = System.nanoTime
     val blockable = get[Blockable]
     val landable = get[Landable]
     val damagable = get[Damagable]
-    val acted: Set[GameObject] = {
+    val upadated: Set[GameObject] = {
       implicit def objToSet(obj: GameObject) = Set[GameObject](obj)
       (entries ++ nearObj[GameObject](data, findPlayer(entries)).filter(obj => !entries.exists(_.id == obj.id))) flatMap { obj =>
         val ground = obj.ground(landable)
-        val onGround = ground != null
+        val onGround = ground.isDefined
         obj match {
           case player: Player => {
             if (controller.buttonPressed(5)) {
@@ -65,16 +69,19 @@ final class Game(private val data: Set[GameObject], entries: Set[GameObject], pr
           case enemy: Enemy => {
             val direction = if (enemy.vx == 0) {
               enemy.turn
-            } else if (ground != null) {
-              if (enemy.left <= ground.left) {
-                Direction.Right
-              } else if (enemy.right >= ground.right) {
-                Direction.Left
-              } else {
-                enemy.direction
-              }
             } else {
-              enemy.direction
+              ground match {
+                case Some(ground) => {
+                  if (enemy.left <= ground.left) {
+                    Direction.Right
+                  } else if (enemy.right >= ground.right) {
+                    Direction.Left
+                  } else {
+                    enemy.direction
+                  }
+                }
+                case None => enemy.direction
+              }
             }
             val vx = enemy.move(direction, onGround)
             new Enemy(enemy, enemy.x, enemy.y, vx, enemy.vy, direction, enemy.life)
@@ -86,13 +93,11 @@ final class Game(private val data: Set[GameObject], entries: Set[GameObject], pr
           }
         }
       }
-    }
-
-    val updated = acted map { obj =>
+    } map { obj =>
 
       val life: Float = if (!obj.invincible) {
         val d = obj match {
-          case player: Player => damagable filter (_.id != player.id)
+          case Player(id, _, _, _, _, _, _, _, _, _) => damagable filter (_.id != id)
           case enemy: Enemy => damagable filter (damagable => damagable.id != enemy.id && !damagable.isInstanceOf[Enemy])
         }
         obj.damaged(d)
@@ -105,24 +110,25 @@ final class Game(private val data: Set[GameObject], entries: Set[GameObject], pr
       val y = obj.y + obj.vy
 
       val ground = obj.ground(landable)
-      val onGround = ground != null
+      val onGround = ground.isDefined
 
       val vx: Float = if (!obj.isInstanceOf[Fixing]) {
-        if (onGround) {
-          val vx = if (obj.vx > 0) {
-            obj.vx - ground.friction
-          } else if (obj.vx < 0) {
-            obj.vx + ground.friction
-          } else {
-            0
+        ground match {
+          case Some(ground) => {
+            val vx = if (obj.vx > 0) {
+              obj.vx - ground.friction
+            } else if (obj.vx < 0) {
+              obj.vx + ground.friction
+            } else {
+              0
+            }
+            if (abs(vx) - ground.friction < 0) {
+              0
+            } else {
+              vx
+            }
           }
-          if (abs(vx) - ground.friction < 0) {
-            0
-          } else {
-            vx
-          }
-        } else {
-          obj.vx
+          case None => obj.vx
         }
       } else {
         obj.vx
@@ -139,15 +145,13 @@ final class Game(private val data: Set[GameObject], entries: Set[GameObject], pr
       }
 
       obj match {
-        case player: Player => new Player(player, x, y, vx, vy, player.direction, life)
-        case enemy: Enemy => new Enemy(enemy, x, y, vx, vy, enemy.direction, life)
+        case Player(id, textures, _, _, width, height, _, _, direction, _) => Player(id, textures, x, y, width, height, vx, vy, direction, life)
+        case Enemy(id, textures, _, _, width, height, _, _, direction, _) => Enemy(id, textures, x, y, width, height, vx, vy, direction, life)
         case bullet: Bullet => new Bullet(bullet, x, y, vx, vy)
         case block: Block => block
       }
 
-    }
-
-    val fixed: Set[GameObject] = updated map { obj =>
+    } map { obj =>
 
       val ground = obj.ground(landable)
       val onGround = ground != null
@@ -158,8 +162,8 @@ final class Game(private val data: Set[GameObject], entries: Set[GameObject], pr
             (block.bottom - obj.height - 1, 0f)
           }
           case None => {
-            if (ground != null && obj.vy <= 0) {
-              (ground.top, 0f)
+            if (ground.isDefined && obj.vy <= 0) {
+              (ground.get.top, 0f)
             } else {
               (obj.y, obj.vy)
             }
@@ -208,46 +212,42 @@ final class Game(private val data: Set[GameObject], entries: Set[GameObject], pr
       }
 
       obj match {
-        case player: Player => new Player(player, x, y, vx, vy, player.direction, player.life)
+        case Player(id, textures, _, _, width, height, _, _, direction, life) => Player(id, textures, x, y, width, height, vx, vy, direction, life)
         case enemy: Enemy => new Enemy(enemy, x, y, vx, vy, enemy.direction, enemy.life)
         case bullet: Bullet => new Bullet(bullet, x, y, vx, vy)
         case block: Block => block
       }
 
-    }
-
-    val deleted = {
-      val player = findPlayer(fixed)
-      fixed filter { obj =>
-        if (obj.top > 0 && near(obj, player)) {
-          obj match {
-            case bullet: Bullet => {
-              val obstacles = fixed filter (fixed => !fixed.isInstanceOf[Bullet] && fixed.id != bullet.id)
-              bullet.left < goal && bullet.right > start && !(obstacles exists (bullet.hit(_)))
-            }
-            case _ => {
-              if (obj.invincible) {
-                true
-              } else {
-                obj.life > 0
-              }
+    } filter { obj =>
+      val player = findPlayer(entries)
+      if (obj.top > 0 && near(obj, player)) {
+        obj match {
+          case bullet: Bullet => { //更新されていないオブジェクト
+            val obstacles = entries filter (fixed => !fixed.isInstanceOf[Bullet] && fixed.id != bullet.id)
+            bullet.left < goal && bullet.right > start && !(obstacles exists (bullet.hit(_)))
+          }
+          case _ => {
+            if (obj.invincible) {
+              true
+            } else {
+              obj.life > 0
             }
           }
-        } else {
-          false
         }
+      } else {
+        false
       }
     }
-
-    //entries foreach (_.delete())
-
-    val player = findPlayer(deleted)
-    if (player == null) {
-      over
-    } else if (player.left > goal) {
-      clear
-    } else {
-      new Game(this, deleted)
+    locally {
+      val player = findPlayer(upadated)
+      if (player == null) {
+        over
+      } else if (player.left > goal) {
+        clear
+      } else {
+        println((System.nanoTime - n).toFloat / 100000000)
+        new Game(this, upadated)
+      }
     }
   }
 
@@ -255,24 +255,24 @@ final class Game(private val data: Set[GameObject], entries: Set[GameObject], pr
     actor {
 
     }
-      glClear(GL_COLOR_BUFFER_BIT)
-      glPushMatrix()
-      glMatrixMode(GL_MODELVIEW)
-      glLoadIdentity()
-      val hCenter = findPlayer(entries).hCenter
-      val x = if (hCenter <= ACT.halfWidth) {
-        0
-      } else if (hCenter >= goal - ACT.halfWidth) {
-        goal - ACT.width
-      } else {
-        hCenter - ACT.halfWidth
-      }
-      val y = 0f
-      gluLookAt(x, y, 1, x, y, 0, 0, 1, 0)
-      for (entry <- entries) {
-        entry.draw()
-      }
-      glPopMatrix()
+    glClear(GL_COLOR_BUFFER_BIT)
+    glPushMatrix()
+    glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
+    val hCenter = findPlayer(entries).hCenter
+    val x = if (hCenter <= ACT.halfWidth) {
+      0
+    } else if (hCenter >= goal - ACT.halfWidth) {
+      goal - ACT.width
+    } else {
+      hCenter - ACT.halfWidth
+    }
+    val y = 0f
+    gluLookAt(x, y, 1, x, y, 0, 0, 1, 0)
+    for (entry <- entries) {
+      entry.draw()
+    }
+    glPopMatrix()
   }
 
   def clear = {

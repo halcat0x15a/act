@@ -2,7 +2,7 @@ package baskingcat.act.game
 
 import baskingcat.act._
 
-class Block(
+final class Block(
   override val id: Int,
   private val t: Block.Type.Value,
   override val textures: Textures,
@@ -11,11 +11,10 @@ class Block(
   override val width: Float,
   override val height: Float) extends GameObject with Fixing with Blockable with Landable {  
 
+  override val vx = 0f
+  override val vy = 0f
   override val invincible = true
   override val life = 0f
-  override val direction: Direction.Value = t match {
-    case Block.Type.Normal => null
-  }
   override val friction = 0.5f
 
 }

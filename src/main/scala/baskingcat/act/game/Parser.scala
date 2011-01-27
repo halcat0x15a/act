@@ -17,7 +17,7 @@ object Parser {
     def typeFilter(_type: String) = dataList filter (data => (data \ "@type").text == _type)
     implicit def imagesId(node: NodeSeq) = {
       val text = node.text
-      text.substring(text.indexOf("#") + 1, text.lastIndexOf(")"))
+      text.substring(text.indexOf("#") + 1)
     }
     val blocks = typeFilter("block") map (e => new Block(e \ "@id", Block.Type.Normal, imagesMap(e \ "@images"), e \ "@x", e \ "@y", e \ "@width", e \ "@height"))
     val enemies = typeFilter("enemy") map (e => new Enemy(e \ "@id", imagesMap(e \ "@images"), e \ "@x", e \ "@y", e \ "@width", e \ "@height", 5))

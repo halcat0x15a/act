@@ -3,18 +3,18 @@ package baskingcat.act.game
 import baskingcat.act._
 import util._
 
-class Enemy(
-  override val id: Int,
-  override val textures: Textures,
-  override val x: Float,
-  override val y: Float,
-  override val width: Float,
-  override val height: Float,
-  override val vx: Float,
-  override val vy: Float,
-  override val direction: Direction.Value,
-  override val life: Float
-) extends GameObject with Damagable with Movable with Jumpable with Flyable with Shotable {
+final case class Enemy(
+  id: Int,
+  textures: Textures,
+  x: Float,
+  y: Float,
+  width: Float,
+  height: Float,
+  vx: Float,
+  vy: Float,
+  direction: Direction.Value,
+  life: Float
+) extends GameObject with HasDirection with Damagable with Movable with Jumpable with Flyable with Shotable {
 
   def this(id: Int, textures: Textures, x: Float, y: Float, width: Float, height: Float, life: Float) = this(id, textures, x, y, width, height, 0, 0, Direction.Left, life)
 

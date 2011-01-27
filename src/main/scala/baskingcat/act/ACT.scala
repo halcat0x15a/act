@@ -19,6 +19,7 @@ final object ACT extends AbstractGame {
   val height = 600
   val halfWidth = width / 2
   val halfHeight = height / 2
+  lazy val capabilities = GLContext.getCapabilities
   lazy val controller = getController
   protected override lazy val scene = new Title
 
@@ -48,8 +49,8 @@ final object ACT extends AbstractGame {
     glEnableClientState(GL_VERTEX_ARRAY)
     glEnableClientState(GL_TEXTURE_COORD_ARRAY)
     println(glGetString(GL_VERSION))
-    println("VBO: " + (GLContext.getCapabilities.GL_ARB_vertex_buffer_object || GLContext.getCapabilities.OpenGL15))
-    println("FBO: " + (GLContext.getCapabilities.GL_EXT_framebuffer_object || GLContext.getCapabilities.OpenGL30))
+    println("VBO: " + (capabilities.GL_ARB_vertex_buffer_object || GLContext.getCapabilities.OpenGL15))
+    println("FBO: " + (capabilities.GL_EXT_framebuffer_object || GLContext.getCapabilities.OpenGL30))
   }
 
   @throws(classOf[LWJGLException])

@@ -16,7 +16,9 @@ class Item(enemy: Enemy) extends GameObject {
 
   override val y = enemy.y
 
-  override val direction = enemy.direction
+  override val vx = 0f
+
+  override val vy = 0f
 
   override val invincible = true
 

@@ -1,16 +1,15 @@
 package baskingcat.act.game
 
 import baskingcat.act._
+import collection._
 
 abstract class GameObject extends ACTObject {
 
   val id: Int
 
-  val vx: Float = 0
+  val vx: Float
 
-  val vy: Float = 0
-
-  val direction: Direction.Value
+  val vy: Float
 
   val life: Float
 
@@ -23,20 +22,17 @@ abstract class GameObject extends ACTObject {
     })
   }
 
-  lazy val turn = {
-    direction match {
-      case Direction.Right => Direction.Left
-      case Direction.Left => Direction.Right
-    }
-  }
-
   def hit(obj: GameObject) = {
     left <= obj.right && right >= obj.left && top >= obj.bottom && bottom <= obj.top
   }
 
-  def ground(landableSet: Set[Landable]) = landableSet find (ground => bottom <= ground.top && top > ground.top && left < ground.right && right > ground.left) match {
-    case Some(landable) => landable
-    case None => null
+  private var groundMap = mutable.Map.empty[Set[Landable], Option[Landable]]
+
+  def ground(landableSet: Set[Landable]) = {
+    if (!groundMap.contains(landableSet)) {
+      groundMap(landableSet) = landableSet find (ground => bottom <= ground.top && top > ground.top && left < ground.right && right > ground.left)
+    }
+    groundMap(landableSet)
   }
 
 }

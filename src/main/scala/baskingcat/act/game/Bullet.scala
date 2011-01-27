@@ -2,16 +2,16 @@ package baskingcat.act.game
 
 import baskingcat.act._
 
-class Bullet(
-  override val id: Int,
+final case class Bullet(
+  id: Int,
   private val obj: Shotable,
   private val _type: Bullet.Type.Value,
-  override val x: Float,
-  override val y: Float,
-  override val width: Float,
-  override val height: Float,
-  override val vx: Float,
-  override val vy: Float) extends GameObject with Movable with Fixing with Damagable {
+  x: Float,
+  y: Float,
+  width: Float,
+  height: Float,
+  vx: Float,
+  vy: Float) extends GameObject with HasDirection with Movable with Fixing with Damagable {
 
   def this(obj: Shotable, _type: Bullet.Type.Value) = this(obj.id,
     obj,
