@@ -11,28 +11,10 @@ abstract class GameObject extends ACTObject {
 
   val vy: Float
 
-  val life: Float
+  def intersects(obj: GameObject) = left <= obj.right && right >= obj.left && top >= obj.bottom && bottom <= obj.top
 
-  val invincible: Boolean
-
-  def damaged(damagable: Set[Damagable]) = {
-    life - (damagable find (hit) match {
-      case Some(damagable) => damagable.power
-      case None => 0f
-    })
-  }
-
-  def hit(obj: GameObject) = {
-    left <= obj.right && right >= obj.left && top >= obj.bottom && bottom <= obj.top
-  }
-
-  private var groundMap = mutable.Map.empty[Set[Landable], Option[Landable]]
-
-  def ground(landableSet: Set[Landable]) = {
-    if (!groundMap.contains(landableSet)) {
-      groundMap(landableSet) = landableSet find (ground => bottom <= ground.top && top > ground.top && left < ground.right && right > ground.left)
-    }
-    groundMap(landableSet)
+  def findGround(landableSet: Set[Landable]) = {
+    landableSet find (ground => bottom <= ground.top && top > ground.top && left < ground.right && right > ground.left)
   }
 
 }

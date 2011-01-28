@@ -2,19 +2,10 @@ package baskingcat.act.game
 
 import baskingcat.act._
 
-final class Block(
-  override val id: Int,
-  private val t: Block.Type.Value,
-  override val textures: Textures,
-  override val x: Float,
-  override val y: Float,
-  override val width: Float,
-  override val height: Float) extends GameObject with Fixing with Blockable with Landable {  
+final case class Block(x: Float, y: Float, vx: Float, vy: Float)(override val id: Int, private val _type: Block.Type.Value, override val textures: Textures, override val width: Float, override val height: Float) extends GameObject with Fixing with Blockable with Landable {
 
-  override val vx = 0f
-  override val vy = 0f
-  override val invincible = true
-  override val life = 0f
+  def this(block: Block, x: Float, y: Float, vx: Float, vy: Float) = this(x, y, vx, vy)(block.id, block._type, block.textures, block.width, block.height)
+
   override val friction = 0.5f
 
 }
@@ -28,4 +19,3 @@ object Block {
   }
 
 }
-

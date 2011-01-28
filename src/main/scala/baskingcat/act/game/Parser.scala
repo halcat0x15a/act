@@ -5,10 +5,10 @@ import xml._
 
 object Parser {
 
-    implicit def nodeToInt(elem: NodeSeq) = elem.text.toInt
-    implicit def nodeToFloat(elem: NodeSeq) = elem.text.toFloat
+  implicit def nodeToInt(elem: NodeSeq) = elem.text.toInt
+  implicit def nodeToFloat(elem: NodeSeq) = elem.text.toFloat
 
-  def parse(elem: Elem): Set[GameObject] = {
+  def parse(elem: Elem): Set[Product with GameObject] = {
     //val ratio = elem \ "@height" / ACT.height
     val defs = elem \ "defs"
     val images = defs \ "images"
@@ -19,9 +19,9 @@ object Parser {
       val text = node.text
       text.substring(text.indexOf("#") + 1)
     }
-    val blocks = typeFilter("block") map (e => new Block(e \ "@id", Block.Type.Normal, imagesMap(e \ "@images"), e \ "@x", e \ "@y", e \ "@width", e \ "@height"))
-    val enemies = typeFilter("enemy") map (e => new Enemy(e \ "@id", imagesMap(e \ "@images"), e \ "@x", e \ "@y", e \ "@width", e \ "@height", 5))
-    val player = typeFilter("player") map (e => new Player(e \ "@id", imagesMap(e \ "@images"), e \ "@x", e \ "@y", e \ "@width", e \ "@height"))
+    val blocks = typeFilter("block") map (e => Block(e \ "@x", e \ "@y", 0, 0)(e \ "@id", Block.Type.Normal, imagesMap(e \ "@images"), e \ "@width", e \ "@height"))
+    val enemies = typeFilter("enemy") map (e => Enemy(e \ "@x", e \ "@y", 0, 0, Direction.Left, 50)(e \ "@id", imagesMap(e \ "@images"), e \ "@width", e \ "@height"))
+    val player = typeFilter("player") map (e => Player(e \ "@x", e \ "@y", 0, 0, Direction.Right, LifeGauge.max)(e \ "@id", imagesMap(e \ "@images"), e \ "@width", e \ "@height", Resource.textures("negi")))
     (blocks ++ enemies ++ player).toSet
   }
 

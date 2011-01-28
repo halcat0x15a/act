@@ -12,6 +12,7 @@ final class Title extends Scene {
   override def logic(controller: GameController): Scene = {
     if (controller.next) {
       if (controller.buttonPressed(1)) {
+	dispose()
         return new Game(Resource.stages(0))
       }
     }
@@ -23,6 +24,10 @@ final class Title extends Scene {
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
     background.draw
+  }
+
+  override def dispose() {
+    background.delete()
   }
 
 }

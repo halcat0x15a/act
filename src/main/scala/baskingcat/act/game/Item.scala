@@ -2,7 +2,7 @@ package baskingcat.act.game
 
 import baskingcat.act._
 
-class Item(enemy: Enemy) extends GameObject {
+final case class Item(enemy: Enemy) extends GameObject {
 
   override val id = enemy.hashCode
 
@@ -19,10 +19,6 @@ class Item(enemy: Enemy) extends GameObject {
   override val vx = 0f
 
   override val vy = 0f
-
-  override val invincible = true
-
-  override val life = 0f
 
 }
 

@@ -24,9 +24,10 @@ object Textures {
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
       if (ACT.capabilities.OpenGL14) {
         glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE)
+        // 元画像は透明
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, dataBuffer)
       } else {
-	gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, width, height, GL_RGBA, GL_UNSIGNED_BYTE, dataBuffer)
+        gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, width, height, GL_RGBA, GL_UNSIGNED_BYTE, dataBuffer)
       }
     }
     new Textures(buffers, width, height, repeat)
@@ -46,7 +47,7 @@ object Textures {
     val bufferedImage = try {
       ImageIO.read(new File(path))
     } catch {
-      case e => throw Message.error(FileError(e, path))
+      case e => Message.fileNotFoundError(e, path)
     }
     load(Array(bufferedImage))
   }
@@ -57,6 +58,11 @@ class Textures(buffers: IntBuffer, val width: Int, val height: Int, val repeat: 
 
   def bind(n: Int) = glBindTexture(GL_TEXTURE_2D, buffers.get(n))
 
-  def delete() = glDeleteTextures(buffers)
+  private var deleted = false
+
+  def delete() = if (!deleted) {
+    glDeleteTextures(buffers)
+    deleted = true
+  }
 
 }

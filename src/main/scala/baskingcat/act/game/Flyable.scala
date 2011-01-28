@@ -1,3 +1,3 @@
 package baskingcat.act.game
 
-trait Flyable extends GameObject
+trait Flyable extends Product

@@ -21,4 +21,7 @@ final class Clear(time: Float) extends Scene {
     glClear(GL_COLOR_BUFFER_BIT)
   }
 
+  override def dispose() {
+  }
+
 }

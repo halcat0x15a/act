@@ -2,39 +2,11 @@ package baskingcat.act.game
 
 import baskingcat.act._
 
-final case class Bullet(
-  id: Int,
-  private val obj: Shotable,
-  private val _type: Bullet.Type.Value,
-  x: Float,
-  y: Float,
-  width: Float,
-  height: Float,
-  vx: Float,
-  vy: Float) extends GameObject with HasDirection with Movable with Fixing with Damagable {
+final case class Bullet(x: Float, y: Float, vx: Float, vy: Float, direction: Direction.Value)(override val id: Int, override val textures: Textures, override val width: Float, override val height: Float, override val power: Float, override val speed: Float) extends GameObject with HasDirection with Damagable with Movable with Fixing {
 
-  def this(obj: Shotable, _type: Bullet.Type.Value) = this(obj.id,
-    obj,
-    _type,
-    if (obj.direction == Direction.Right) obj.right else obj.left - obj.width,
-    obj.y + obj.height / 2,
-    obj.width,
-    obj.height,
-    10f,
-    0f)
+  def this(obj: Shotable, vx: Float, vy: Float, power: Float, speed: Float) = this(if (obj.direction == Direction.Right) obj.right else obj.left - obj.width, obj.y + obj.height / 2, vx, vy, obj.direction)(obj.id, obj.bulletTextures, obj.width, obj.height, power, speed)
 
-  def this(bullet: Bullet, x: Float, y: Float, vx: Float, vy: Float) = this(bullet.id, bullet.obj, bullet._type, x, y, bullet.width, bullet.height, vx, vy)
-
-  override val invincible = true
-  override val life = 0f
-  override val speed = 10f
-  override val textures = obj.bulletTextures
-  override val power = _type match {
-    case Bullet.Type.Normal => 1
-    case Bullet.Type.Charge => 5
-  }
-
-  override val direction = obj.direction
+  def this(bullet: Bullet, x: Float, y: Float, vx: Float, vy: Float, direction: Direction.Value) = this(x, y, vx, vy, direction)(bullet.id, bullet.textures, bullet.width, bullet.height, bullet.power, bullet.speed)
 
 }
 

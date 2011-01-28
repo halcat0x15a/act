@@ -6,7 +6,6 @@ import annotation._
 import xml._
 import org.lwjgl._
 import opengl._
-import input.Keyboard
 import GL11._
 import util.glu.GLU._
 
@@ -30,7 +29,7 @@ final object ACT extends AbstractGame {
     val displayMode = Display.getAvailableDisplayModes.find(m => m.getWidth == width && m.getHeight == height) match {
       case Some(m) => m
       case None => {
-        throw Message.error(SystemError(new Exception))
+        throw Message.systemError(new Exception)
       }
     }
     Display.setDisplayMode(displayMode)
@@ -43,7 +42,6 @@ final object ACT extends AbstractGame {
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     gluOrtho2D(0, width, 0, height)
-    glEnable(GL_TEXTURE_2D)
     glEnable(GL_BLEND)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
     glEnableClientState(GL_VERTEX_ARRAY)
@@ -58,7 +56,7 @@ final object ACT extends AbstractGame {
   override def run(controller: GameController, scene: Scene) {
     Display.update()
     controller.poll()
-    val nextScene: Scene = if (Display.isCloseRequested || Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) {
+    val nextScene: Scene = if (Display.isCloseRequested || input.Keyboard.isKeyDown(input.Keyboard.KEY_ESCAPE)) {
       return
     } else if (Display.isActive) {
       val nextScene = scene.logic(controller)
@@ -70,7 +68,7 @@ final object ACT extends AbstractGame {
       try {
         Thread.sleep(100)
       } catch {
-        case e => throw Message.error(SystemError(e))
+        case e => throw Message.systemError(e)
       }
       if (Display.isVisible || Display.isDirty) {
         scene.render()
@@ -83,8 +81,8 @@ final object ACT extends AbstractGame {
   @throws(classOf[LWJGLException])
   override def cleanup() {
     Display.destroy()
-    Keyboard.destroy()
     controller.destroy()
+    Resource.destroy()
   }
 
   def getController = {

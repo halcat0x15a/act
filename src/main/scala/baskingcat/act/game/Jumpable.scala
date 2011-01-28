@@ -1,6 +1,6 @@
 package baskingcat.act.game
 
-trait Jumpable extends GameObject {
+trait Jumpable extends GameObject with Product {
 
   private val effort = 0.2f
 

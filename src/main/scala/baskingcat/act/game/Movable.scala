@@ -1,6 +1,6 @@
 package baskingcat.act.game
 
-trait Movable extends GameObject {
+trait Movable extends GameObject with HasDirection {
 
   val speed: Float
 
