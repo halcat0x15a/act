@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="10000" height="1000" id="svg2" version="1.1" inkscape:version="0.48.0 r9654" sodipodi:docname="stage.svg">
+  <defs id="defs4" />
+  <sodipodi:namedview id="base" pagecolor="#ffffff" bordercolor="#666666" borderopacity="1.0" inkscape:pageopacity="0.0" inkscape:pageshadow="2" inkscape:zoom="0.35" inkscape:cx="8570.023" inkscape:cy="654.28571" inkscape:document-units="px" inkscape:current-layer="layer1" showgrid="true" inkscape:window-width="1440" inkscape:window-height="875" inkscape:window-x="0" inkscape:window-y="1" inkscape:window-maximized="1">
+    <inkscape:grid type="xygrid" id="grid2987" empspacing="5" visible="true" enabled="true" snapvisiblegridlinesonly="true" />
+  </sodipodi:namedview>
+  <metadata id="metadata7">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g inkscape:label="レイヤー 1" inkscape:groupmode="layer" id="layer1" transform="translate(0,-52.362153)">
+    <rect style="fill:black" id="rect2989" width="4840" height="200" x="0" y="852.36218" ry="0" />
+    <rect style="fill:lime" id="rect3010" width="160" height="160" x="280" y="600" transform="translate(0,52.362153)" />
+    <rect style="fill:black" id="rect3012" width="200" height="240" x="720" y="560" transform="translate(0,52.362153)" />
+    <rect style="fill:black" id="rect3014" width="1520" height="200" x="1200" y="332.36215" />
+    <rect style="fill:red" id="rect3016" width="160" height="160" x="1440" y="640" transform="translate(0,52.362153)" />
+    <rect style="fill:black" id="rect3018" width="1120" height="200" x="3200" y="280" transform="translate(0,52.362153)" />
+    <rect style="fill:red" id="rect3020" width="160" height="160" x="2520" y="640" transform="translate(0,52.362153)" />
+    <rect style="fill:black" id="rect3022" width="200" height="160" x="4640" y="640" transform="translate(0,52.362153)" />
+    <rect style="fill:black" id="rect2999" width="200" height="200" x="5080" y="452.36215" />
+    <rect style="fill:black" id="rect3001" width="200" height="200" x="5480" y="252.36215" />
+    <rect style="fill:black" id="rect3001-5" width="200" height="200" x="6040" y="252.36215" />
+    <rect style="fill:black" id="rect3021" width="1720" height="160" x="6800" y="840" transform="translate(0,52.362153)" />
+    <rect style="fill:red" id="rect3023" width="80" height="80" x="6080" y="80" transform="translate(0,52.362153)" />
+    <rect style="fill:black" id="rect3025" width="120" height="120" x="7480" y="720" transform="translate(0,52.362153)" />
+    <rect style="fill:black" id="rect3027" width="1160" height="160" x="8840" y="840" transform="translate(0,52.362153)" />
+    <rect style="fill:red" id="rect3029" width="160" height="160" x="7800" y="40" transform="translate(0,52.362153)" />
+    <rect style="fill:red" id="rect3031" width="440" height="440" x="9440" y="360" transform="translate(0,52.362153)" />
+  </g>
+</svg>

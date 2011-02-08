@@ -1,0 +1,11 @@
+jetty-run
+reload
+jetty-run
+reload
+update
+jetty-run
+reload
+update
+clean
+git
+exit
