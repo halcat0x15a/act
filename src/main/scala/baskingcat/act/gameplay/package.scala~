@@ -1,7 +1,0 @@
-package baskingcat.act
-
-package object gameplay {
-
-  type GameplayObjects[A <: State] = Vector[GameplayObject[A]]
-
-}
