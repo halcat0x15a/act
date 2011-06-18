@@ -1,33 +1,23 @@
 package baskingcat.act.title
 
-import com.baskingcat.game._
 import baskingcat.act._
-import baskingcat.act.game._
-import org.lwjgl.opengl.GL11._
+import baskingcat.act.gameplay._
 
-final class Title extends Scene {
+import scalaz._
+import Scalaz._
 
-  val background = new Background(Resource.textures("title"))
+case class Title(implicit val properties: GameProperties) extends Scene {
 
-  override def logic(controller: GameController): Scene = {
-    if (controller.next) {
-      if (controller.buttonPressed(1)) {
-	dispose()
-        return new Game(Resource.stages(0))
-      }
-    }
-    this
-  }
+  val objects = Vector(Background(properties, 'title))
 
-  override def render() {
-    glClear(GL_COLOR_BUFFER_BIT)
-    glMatrixMode(GL_MODELVIEW)
-    glLoadIdentity()
-    background.draw
-  }
+  val bounds =  new Rectangle(properties.size)
 
-  override def dispose() {
-    background.delete()
+  def logic: Scene = {
+    if (properties.controller.isButtonPressed(0))
+      new Gameplay("stages/test.svg")
+    else
+      this
   }
 
 }
+

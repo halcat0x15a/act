@@ -1,13 +1,7 @@
 package baskingcat.act
 
-class Background(override val textures: Textures) extends ACTObject {
+case class Background(properties: GameProperties, name: Symbol) extends GameObject {
 
-  override val width = ACT.width.asInstanceOf[Float]
-
-  override val height = ACT.height.asInstanceOf[Float]
-
-  override val x = 0f
-
-  override val y = 0f
+  lazy val bounds: Rectangle = new Rectangle(properties.size)
 
 }

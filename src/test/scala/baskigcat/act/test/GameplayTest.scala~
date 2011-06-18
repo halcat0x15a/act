@@ -1,0 +1,14 @@
+package baskingcat.act.test
+
+import org.scalacheck._
+
+import baskingcat.act.gameplay._
+import baskingcat.act.title._
+
+object GameplayTest extends Properties("baskingcat.act.gameplay.Gameplay") {
+
+  val gameplay = new Gameplay("stages/test.svg")
+
+  property("logic") = Prop.forAll((i: Int) => gameplay.logic.isInstanceOf[Title])
+
+}

@@ -1,95 +1,122 @@
 package baskingcat.act
 
-import com.baskingcat.game._
-import title._
-import annotation._
-import xml._
+import java.io._
+
+import scala.annotation._
+import scala.xml._
+
+import scalaz._
+import Scalaz._
+
 import org.lwjgl._
-import opengl._
-import GL11._
-import util.glu.GLU._
+import org.lwjgl.opengl._
+import org.lwjgl.opengl.GL11._
+import org.lwjgl.util.glu.GLU._
 
-final object ACT extends AbstractGame {
+import org.newdawn.slick.Color
+import org.newdawn.slick.opengl.{ Texture, TextureLoader }
+import org.newdawn.slick.util.Log
 
-  val debug = true
-  val title = "Action Game"
-  val fps = 60
-  val width = 800
-  val height = 600
-  val halfWidth = width / 2
-  val halfHeight = height / 2
-  lazy val capabilities = GLContext.getCapabilities
-  lazy val controller = getController
-  protected override lazy val scene = new Title
+import title._
+import baskingcat.game.opengl
 
-  @throws(classOf[LWJGLException])
-  override def init() {
-    Sys.initialize()
-    Display.setTitle(title)
-    val displayMode = Display.getAvailableDisplayModes.find(m => m.getWidth == width && m.getHeight == height) match {
-      case Some(m) => m
-      case None => {
-        throw Message.systemError(new Exception)
-      }
-    }
+object ACT {
+
+  private val Title = "Action Game"
+
+  private val FPS = 60
+
+  def texture(name: String) = TextureLoader.getTexture("PNG", stream(name))
+
+  lazy val textures: Map[Symbol, Texture] = Map(
+    'miku -> texture("miku/miku1.png"),
+    'supu -> texture("supu/supu.png"),
+    'negi -> texture("items/negi.png"),
+    'block -> texture("blocks/block.png"),
+    'title -> texture("backgrounds/title.png"))
+
+  def init() {
+    Display.setTitle(Title)
+    val displayMode = Display.getAvailableDisplayModes.head
     Display.setDisplayMode(displayMode)
-    Display.setTitle(title)
-    Display.setVSyncEnabled(true)
-    Display.setSwapInterval(1)
     Display.create()
+    LWJGLController.create()
     glClearColor(0, 0, 0, 0)
-    glViewport(0, 0, width, height)
+    glViewport(0, 0, displayMode.getWidth, displayMode.getHeight)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-    gluOrtho2D(0, width, 0, height)
+    gluOrtho2D(0, displayMode.getWidth, displayMode.getHeight, 0)
+    glMatrixMode(GL_MODELVIEW)
     glEnable(GL_BLEND)
+    glEnable(GL_TEXTURE_2D)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-    glEnableClientState(GL_VERTEX_ARRAY)
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY)
-    println(glGetString(GL_VERSION))
-    println("VBO: " + (capabilities.GL_ARB_vertex_buffer_object || GLContext.getCapabilities.OpenGL15))
-    println("FBO: " + (capabilities.GL_EXT_framebuffer_object || GLContext.getCapabilities.OpenGL30))
   }
 
-  @throws(classOf[LWJGLException])
+  def render(scene: Scene) {
+    glClear(GL_COLOR_BUFFER_BIT)
+    glLoadIdentity()
+    scene.bounds.location match {
+      case Vector2f(x, y) => //gluLookAt(x, y, 0, x, y, 0, 0, 1, 0)
+    }
+    Color.white.bind()
+    scene.objects.withFilter(_.bounds.intersects(scene.bounds)).foreach { obj =>
+      textures(obj.name).bind()
+      opengl.glBegin(GL_QUADS) {
+        glTexCoord2f(0, 0)
+        glVertex2f(obj.bounds.left, obj.bounds.top)
+        glTexCoord2f(1, 0)
+        glVertex2f(obj.bounds.right, obj.bounds.top)
+        glTexCoord2f(1, 1)
+        glVertex2f(obj.bounds.right, obj.bounds.bottom)
+        glTexCoord2f(0, 1)
+        glVertex2f(obj.bounds.left, obj.bounds.bottom)
+      }
+    }
+  }
+
   @tailrec
-  override def run(controller: GameController, scene: Scene) {
-    Display.update()
-    controller.poll()
-    val nextScene: Scene = if (Display.isCloseRequested || input.Keyboard.isKeyDown(input.Keyboard.KEY_ESCAPE)) {
+  def run(scene: Scene) {
+    LWJGLController.poll()
+    val nextScene = if (Display.isCloseRequested) {
       return
     } else if (Display.isActive) {
-      val nextScene = scene.logic(controller)
-      scene.render()
-      Display.swapBuffers()
-      Display.sync(fps)
-      nextScene
+      render(scene)
+      scene.logic
     } else {
-      try {
-        Thread.sleep(100)
-      } catch {
-        case e => throw Message.systemError(e)
-      }
-      if (Display.isVisible || Display.isDirty) {
-        scene.render()
+      (Display.isVisible || Display.isDirty) ! {
+        render(scene)
       }
       scene
     }
-    run(controller, nextScene)
+    Display.sync(FPS)
+    Display.update()
+    run(nextScene)
   }
 
-  @throws(classOf[LWJGLException])
-  override def cleanup() {
-    Display.destroy()
-    controller.destroy()
-    Resource.destroy()
+  def cleanup() {
+    Display.isCreated ! {
+      Display.destroy()
+    }
+    LWJGLController.destroy()
   }
 
-  def getController = {
-    def createMap(attr: String) = ((Resource.config \\ "controller" \ "input") flatMap (input => Map((input \ "@id").text.toInt -> (input \ ("@" + attr)).text.toInt))).toMap
-    val keyMap = createMap("key")
-    val buttonMap = createMap("button")
-    new GameController(keyMap, buttonMap)
+  def main(args: Array[String]) {
+    try {
+      Log.info("init")
+      init()
+      Log.info("run")
+      val size = Dimension(Display.getDisplayMode.getWidth, Display.getDisplayMode.getHeight)
+      val controller = new LWJGLController
+      val properties = GameProperties(size, controller)
+      Log.info("test")
+      run(new title.Title()(properties))
+    } catch {
+      case e => e.printStackTrace()
+    } finally {
+      Log.info("cleanup")
+      cleanup()
+    }
+    sys.exit()
   }
 
 }

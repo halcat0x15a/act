@@ -1,0 +1,21 @@
+[0m[[0minfo[0m] [0mRunning baskingcat.act.ACT [0m
+[0m[[0mdebug[0m] [0mStarting sandboxed run...[0m
+[0m[[0mdebug[0m] [0mWaiting for threads to exit or System.exit to be called.[0m
+[0m[[0mdebug[0m] [0m  Classpath:[0m
+[0m[[0mdebug[0m] [0m	/home/halcat0x15a/projects/act/target/scala-2.9.0.1/classes[0m
+[0m[[0mdebug[0m] [0m	/home/halcat0x15a/projects/act/target/scala-2.9.0.1/classes[0m
+[0m[[0mdebug[0m] [0m	/home/halcat0x15a/projects/act/lib/slick-util.jar[0m
+[0m[[0mdebug[0m] [0m	/home/halcat0x15a/projects/act/lib/lwjgl_util.jar[0m
+[0m[[0mdebug[0m] [0m	/home/halcat0x15a/projects/act/lib/game_2.8.1-1.0.jar[0m
+[0m[[0mdebug[0m] [0m	/home/halcat0x15a/projects/act/lib/lwjgl.jar[0m
+[0m[[0mdebug[0m] [0m	/home/halcat0x15a/projects/act/lib/lwjgl-debug.jar[0m
+[0m[[0mdebug[0m] [0m	/home/halcat0x15a/projects/act/lib/jinput.jar[0m
+[0m[[0mdebug[0m] [0m	/home/halcat0x15a/projects/act/project/boot/scala-2.9.0-1/lib/scala-library.jar[0m
+[0m[[0mdebug[0m] [0m	/home/halcat0x15a/.ivy2/cache/org.scalaz/scalaz-core_2.9.0-1/jars/scalaz-core_2.9.0-1-6.0.1.jar[0m
+[0m[[0mdebug[0m] [0m	/home/halcat0x15a/.ivy2/cache/org.scala-tools.testing/scalacheck_2.9.0-1/jars/scalacheck_2.9.0-1-1.9.jar[0m
+[0m[[0mdebug[0m] [0m	/home/halcat0x15a/.ivy2/cache/org.scala-tools.testing/test-interface/jars/test-interface-0.5.jar[0m
+[0m[[0mdebug[0m] [0mWaiting for thread run-main to exit[0m
+[0m[[0mdebug[0m] [0m	Thread run-main exited.[0m
+[0m[[0mdebug[0m] [0mInterrupting remaining threads (should be all daemons).[0m
+[0m[[0mdebug[0m] [0mSandboxed run complete..[0m
+[0m[[0mdebug[0m] [0mExited with code 0[0m

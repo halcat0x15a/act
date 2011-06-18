@@ -1,0 +1,3 @@
+package baskingcat.act.gameplay
+
+sealed abstract class State
