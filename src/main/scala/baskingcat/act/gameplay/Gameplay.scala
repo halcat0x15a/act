@@ -23,20 +23,20 @@ case class Gameplay(stage: Stage)(implicit val properties: GameProperties) exten
 
   val bounds = stage.viewport
 
-  private type UpdateFunc[A] = PartialFunction[GameplayObject[A], GameplayObject[A]]
+  private type UpdateFunc = PartialFunction[GObj, GObj]
 
-  def action[A]: UpdateFunc[A] = {
-    case player: Player[A] => player.walk.jump
-    case enemy: Enemy[A] => enemy.walk
-    case obj: GameplayObject[A] => obj
+  def action: UpdateFunc = {
+    case player: Player[_, _] => player.walk.jump
+    case enemy: Enemy[_, _] => enemy.walk
+    case obj: GameplayObject[_, _] => obj
   }
 
-  def move[A]: UpdateFunc[State] = {
-    case movable: Movable[A] => movable.move
-    case obj: GameplayObject[A] => obj
+  def move: UpdateFunc = {
+    case movable: Movable[_, _] => movable.move
+    case obj: GameplayObject[_, _] => obj
   }
 
-  def applyLaw[A]: UpdateFunc[A] = {
+  def applyLaw: UpdateFunc = {
     case player @ Player(_, Vector2f(vx, vy), _, _) => {
       val vx2 = if (vx > 0)
         vx - friction
@@ -47,23 +47,23 @@ case class Gameplay(stage: Stage)(implicit val properties: GameProperties) exten
       val vy2 = vy + gravity
       player.copy(velocity = Vector2f(vx2, vy2))
     }
-    case obj: GameplayObject[A] => obj
+    case obj: GameplayObject[_, _] => obj
   }
 
-  def damage[A]: UpdateFunc[A] = {
-    case live: Live[A] => live.damaged
-    case obj: GameplayObject[A] => obj
+  def damage: UpdateFunc = {
+    case live: Live[_, _] => live.damaged
+    case obj: GameplayObject[_, _] => obj
   }
 
-  def isDead[A](obj: GameplayObject[A]) = cond(obj) {
-    case live: Live[A] => live.dead
+  def isDead(obj: GameplayObject[_, _]) = cond(obj) {
+    case live: Live[_, _] => live.dead
   }
 
   def logic: Scene = if (properties.controller.isButtonPressed(5)) {
     Title()
   } else {
     val objects = ((_: GameplayObjects).map(action >>> move >>> applyLaw >>> damage).filterNot(isDead)).first.apply(stage.objects.partition(_.bounds.intersects(bounds))).fold(_ <+> _)
-    objects.find(_.isInstanceOf[Player[_]]).map { player =>
+    objects.find(_.isInstanceOf[Player[_, _]]).map { player =>
       val location = {
         val x = if (player.bounds.location.x < properties.size.width / 2)
           0

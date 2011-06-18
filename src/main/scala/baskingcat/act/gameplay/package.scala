@@ -2,6 +2,8 @@ package baskingcat.act
 
 package object gameplay {
 
-  type GameplayObjects = Vector[GameplayObject[State]]
+  type GObj = GameplayObject[State, Direction]
+
+  type GameplayObjects = Vector[GObj]
 
 }

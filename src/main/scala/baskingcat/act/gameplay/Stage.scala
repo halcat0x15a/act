@@ -15,13 +15,13 @@ case class Stage(objects: GameplayObjects, size: Dimension, viewport: Rectangle)
 
   val filteredObjects = objects.filter(_.bounds.intersects(effective))
 
-  val blocks = filteredObjects.filter(_.isInstanceOf[Block[_]])
+  val blocks = filteredObjects.filter(_.isInstanceOf[Block[_, _]])
 
   val player = objects.collect {
-    case player: Player[_] => player
+    case player: Player[_, _] => player
   }.headOption.err("Player not found")
 
-  def bottomBlock(obj: GameplayObject[_]) = blocks.find(block => obj.bounds.top == player.bounds.bottom && block.bounds.left < obj.bounds.right && block.bounds.right < obj.bounds.left)
+  def bottomBlock(obj: GameplayObject[_, _]) = blocks.find(block => obj.bounds.top == player.bounds.bottom && block.bounds.left < obj.bounds.right && block.bounds.right < obj.bounds.left)
 
 }
 
@@ -39,18 +39,18 @@ object Stage {
       val x: Float = rect \ "@x"
       val y: Float = rect \ "@y"
       rect.attribute("id").map(_.text).map {
-        case PlayerRegex() => Seq(new Player[Init](x, y))
-        case EnemyRegex() => Seq(new Enemy[Init](x, y))
+        case PlayerRegex() => Seq(new Player[Normal, Forward](x, y))
+        case EnemyRegex() => Seq(new Enemy[Normal, Backward](x, y))
         case _ => for {
           i <- 0 until (rect \ "@width" / Block.Width).toInt
           j <- 0 until (rect \ "@height" / Block.Height).toInt
-          block = new Block[Init](x + i * Block.Width, y + j * Block.Height)
+          block = new Block[Normal, Unknown](x + i * Block.Width, y + j * Block.Height)
         } yield block
       }
     }.collect {
       case Some(seq) => seq
     }.flatten
-    data.find(_.isInstanceOf[Player[_ <: State]]).map { player =>
+    data.find(_.isInstanceOf[Player[_, _]]).map { player =>
       val y = player.bounds.bottom
       new Stage(Vector(data: _*), Dimension(elem \ "@width", elem \ "@height"), Rectangle(Vector2f(0, y), properties.size))
     }.err("Player Not Found.")

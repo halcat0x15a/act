@@ -232,3 +232,8 @@ reload
 clean
 compile
 run
+exit
+compile
+run
+compile
+exit

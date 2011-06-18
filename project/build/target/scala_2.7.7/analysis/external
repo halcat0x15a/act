@@ -1,5 +1,0 @@
-#External Dependencies
-#Tue Feb 08 21:14:52 JST 2011
-/usr/lib/jvm/java-6-openjdk/jre/lib/rt.jar=ACTProject.scala
-/home/halcat/projects/act/project/boot/scala-2.7.7/lib/scala-library.jar=ACTProject.scala
-/home/halcat/projects/act/project/boot/scala-2.7.7/org.scala-tools.sbt/sbt/0.7.4/sbt_2.7.7-0.7.4.jar=ACTProject.scala

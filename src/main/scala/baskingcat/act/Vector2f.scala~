@@ -1,9 +1,0 @@
-package baskingcat.act
-
-case class Vector2f(x: Float, y: Float) {
-
-  def +(vec: Vector2f) = Vector2f(x + vec.x, y + vec.y)
-
-  def -(vec: Vector2f) = Vector2f(x - vec.x, y - vec.y)
-
-}
