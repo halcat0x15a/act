@@ -237,3 +237,16 @@ compile
 run
 compile
 exit
+compile
+test
+compile
+exit
+compile
+run
+last
+compile
+run
+compile
+run
+clean
+exit

@@ -2,6 +2,8 @@ package baskingcat.act
 
 case class Rectangle(location: Point, size: Dimension) {
 
+  def this(location: Point) = this(location, Dimension(0, 0))
+
   def this(size: Dimension) = this(Vector2f(0, 0), size)
 
   def this(x: Float, y: Float, width: Float, height: Float) = this(Vector2f(x, y), Dimension(width, height))
@@ -21,6 +23,10 @@ case class Rectangle(location: Point, size: Dimension) {
   lazy val right = x + width
 
   lazy val bottom = y + height
+
+  lazy val centerX = x + width / 2
+
+  lazy val centerY = y + height / 2
 
   def contains(rect: Rectangle): Boolean = rect.left >= left && rect.top >= top && rect.right <= right && rect.bottom <= bottom
 

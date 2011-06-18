@@ -17,7 +17,6 @@ import org.newdawn.slick.Color
 import org.newdawn.slick.opengl.{ Texture, TextureLoader }
 import org.newdawn.slick.util.Log
 
-import title._
 import baskingcat.game.opengl
 
 object ACT {
@@ -54,22 +53,24 @@ object ACT {
 
   def render(scene: Scene) {
     glClear(GL_COLOR_BUFFER_BIT)
-    glLoadIdentity()
-    scene.bounds.location match {
-      case Vector2f(x, y) => //gluLookAt(x, y, 0, x, y, 0, 0, 1, 0)
-    }
-    Color.white.bind()
-    scene.objects.withFilter(_.bounds.intersects(scene.bounds)).foreach { obj =>
-      textures(obj.name).bind()
-      opengl.glBegin(GL_QUADS) {
-        glTexCoord2f(0, 0)
-        glVertex2f(obj.bounds.left, obj.bounds.top)
-        glTexCoord2f(1, 0)
-        glVertex2f(obj.bounds.right, obj.bounds.top)
-        glTexCoord2f(1, 1)
-        glVertex2f(obj.bounds.right, obj.bounds.bottom)
-        glTexCoord2f(0, 1)
-        glVertex2f(obj.bounds.left, obj.bounds.bottom)
+    opengl.glPushMatrix {
+      glLoadIdentity()
+      scene.bounds.location match {
+        case Vector2f(x, y) => glTranslatef(x, y, 0)//gluLookAt(x, y, 0, x, y, 0, 0, 1, 0)
+      }
+      Color.white.bind()
+      scene.objects.withFilter(_.bounds.intersects(scene.bounds)).foreach { obj =>
+        textures(obj.name).bind()
+        opengl.glBegin(GL_QUADS) {
+          glTexCoord2f(0, 0)
+          glVertex2f(obj.bounds.left, obj.bounds.top)
+          glTexCoord2f(1, 0)
+          glVertex2f(obj.bounds.right, obj.bounds.top)
+          glTexCoord2f(1, 1)
+          glVertex2f(obj.bounds.right, obj.bounds.bottom)
+          glTexCoord2f(0, 1)
+          glVertex2f(obj.bounds.left, obj.bounds.bottom)
+        }
       }
     }
   }
@@ -107,9 +108,9 @@ object ACT {
       Log.info("run")
       val size = Dimension(Display.getDisplayMode.getWidth, Display.getDisplayMode.getHeight)
       val controller = new LWJGLController
-      val properties = GameProperties(size, controller)
+      implicit val properties = GameProperties(size, controller)
       Log.info("test")
-      run(new title.Title()(properties))
+      run(title.Title())
     } catch {
       case e => e.printStackTrace()
     } finally {
