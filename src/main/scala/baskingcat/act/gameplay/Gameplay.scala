@@ -15,10 +15,6 @@ case class Gameplay(stage: Stage)(implicit val properties: GameProperties) exten
 
   implicit val s = stage
 
-  private val gravity = 1f
-
-  private val friction = 0.5f
-
   val objects = stage.objects
 
   val bounds = stage.viewport
@@ -41,16 +37,7 @@ case class Gameplay(stage: Stage)(implicit val properties: GameProperties) exten
   }
 
   val applyLaw: UpdateFunc = {
-    case player @ Player(_, Vector2f(vx, vy), _, _) => {
-      val vx2 = if (vx > 0)
-        vx - friction
-      else if (vx < 0)
-        vx + friction
-      else
-        vx
-      val vy2 = vy + gravity
-      player.copy(velocity = Vector2f(vx2, vy2))
-    }
+    case movable: Movable[_, _] => movable.apply
     case obj: GameplayObject[_, _] => obj
   }
 
@@ -59,13 +46,13 @@ case class Gameplay(stage: Stage)(implicit val properties: GameProperties) exten
     case obj: GameplayObject[_, _] => obj
   }
 
-  val update: GObj => GObj = walk >>> jump >>> move >>> applyLaw >>> damaged
+  val update: GObj => GObj = walk >>> jump >>> move >>> applyLaw >>> damaged 
 
-  def isDead(obj: GameplayObject[_, _]): Boolean = cond(obj) {
-    case live: Live[_, _] => live.dead
+  def isDead(obj: GObj): Boolean = cond(obj) {
+    case live: Live[_, _] => live.dead;false
   }
 
-  def logic: Scene = if (properties.controller.isButtonPressed(5)) {
+  def logic: Scene = if (properties.input.isButtonPressed(5)) {
     Title()
   } else {
     val objects = ((_: GameplayObjects).map(update).filterNot(isDead)).first.apply(stage.objects.partition(_.bounds.intersects(bounds))).fold(_ <+> _)
@@ -90,4 +77,3 @@ case class Gameplay(stage: Stage)(implicit val properties: GameProperties) exten
   }
 
 }
-

@@ -13,7 +13,7 @@ case class Title(implicit val properties: GameProperties) extends Scene {
   val bounds =  new Rectangle(properties.size)
 
   def logic: Scene = {
-    if (properties.controller.isButtonPressed(0))
+    if (properties.input.isButtonPressed(0))
       new Gameplay("stages/test.svg")
     else
       this

@@ -25,6 +25,8 @@ trait Movable[+A, +B] extends GameplayObject[A, B] {
 
   def move: GameplayObject[Moving, B]
 
+  def apply(implicit stage: Stage): GameplayObject[Moving, B]
+
 }
 
 trait Walkable[+A, +B] extends Movable[A, B] {
@@ -39,18 +41,18 @@ trait Jumpable[+A, +B] extends Movable[A, B] {
 
 }
 
-case class Player[+A, +B](bounds: Rectangle, velocity: Vector2f, direction: Symbol, life: Int)(implicit properties: GameProperties) extends GameplayObject[A, B] with Live[A, B] with Walkable[A, B] with Jumpable[A, B] {
+case class Player[+A, +B](bounds: Rectangle, velocity: Vector2f, direction: Symbol, life: Int)(implicit properties: GameProperties, mfa: Manifest[A], mfb: Manifest[B]) extends GameplayObject[A, B] with Live[A, B] with Walkable[A, B] with Jumpable[A, B] {
 
-  def this(x: Float, y: Float)(implicit properties: GameProperties) = this(Rectangle(Vector2f(x, y), Dimension(Player.Width, Player.Height)), Vector2f(0, 0), 'right, Player.Life)
+  def this(x: Float, y: Float)(implicit properties: GameProperties, mfa: Manifest[A], mfb: Manifest[B]) = this(Rectangle(Vector2f(x, y), Dimension(Player.Width, Player.Height)), Vector2f(0, 0), 'right, Player.Life)
 
-  lazy val name = 'miku
+  lazy val name = Symbol(mfa.toString)
 
-  def move = copy(bounds = bounds.copy(location = bounds.location + velocity))
+  def move = copy[Moving, B](bounds = bounds.copy(location = bounds.location + velocity))
 
   def walk(implicit stage: Stage) = {
-    val vx = if (properties.controller.isControllerRight)
+    val vx = if (properties.input.isControllerRight)
       velocity.x + Player.Speed
-    else if (properties.controller.isControllerLeft)
+    else if (properties.input.isControllerLeft)
       velocity.x - Player.Speed
     else
       velocity.x
@@ -58,13 +60,24 @@ case class Player[+A, +B](bounds: Rectangle, velocity: Vector2f, direction: Symb
   }
 
   def jump(implicit stage: Stage) = {
-    val vy = (properties.controller.isButtonPressed(0) && stage.bottomBlock(this).isDefined) ? -Player.JumpPower | velocity.y
-    copy(velocity = velocity.copy(y = vy))
+    val vy = (properties.input.isButtonPressed(0) && stage.bottomBlock(this).isDefined) ? -Player.JumpPower | velocity.y
+    copy[Jumping, B](velocity = velocity.copy(y = vy))
+  }
+
+  def apply(implicit stage: Stage) = {
+    val vx = if (velocity.x > 0)
+      velocity.x - stage.friction
+    else if (velocity.x < 0)
+      velocity.x + stage.friction
+    else
+      velocity.x
+    val vy = velocity.y + stage.gravity
+    copy[Moving, B](velocity = Vector2f(vx, vy))
   }
 
   def detect(obj: GameplayObject[_, _]) = !obj.isInstanceOf[Block[_, _]] && obj.bounds.intersects(bounds)
 
-  def damaged(implicit stage: Stage) = copy(life = stage.objects.any(detect).fold(life - 1, life))
+  def damaged(implicit stage: Stage) = copy[A, B](life = stage.objects.any(detect).fold(life - 1, life))
 
 }
 
@@ -90,9 +103,9 @@ case class Enemy[+A, +B](bounds: Rectangle, velocity: Vector2f, direction: Symbo
 
   def move = copy(bounds = bounds.copy(location = bounds.location + velocity))
 
-  def walk(implicit stage: Stage) = {
-    copy(velocity = new Vector2f)
-  }
+  def walk(implicit stage: Stage) = copy(velocity = new Vector2f)
+
+  def apply(implicit stage: Stage) = copy(velocity = new Vector2f)
 
   def detect(obj: GameplayObject[_, _]) = !obj.isInstanceOf[Block[_, _]] && !obj.isInstanceOf[Enemy[_, _]] && obj.bounds.intersects(bounds)
 
@@ -128,11 +141,13 @@ object Block {
 
 case class Bullet[+A, +B](bounds: Rectangle, velocity: Vector2f, direction: Symbol, life: Int) extends GameplayObject[A, B] with Movable[A, B] with Live[A, B] {
 
-  def this(obj: GameplayObject[_ <: State, _], direction: Symbol) = this(Rectangle(Vector2f((direction == 'right).fold(obj.bounds.right, obj.bounds.left - Bullet.Width), obj.bounds.top + obj.bounds.size.height / 2 - Bullet.Height / 2), Dimension(Bullet.Width, Bullet.Height)), Vector2f(10, 0), direction, 1)
+  def this(obj: GameplayObject[_, _], direction: Symbol) = this(Rectangle(Vector2f((direction == 'right).fold(obj.bounds.right, obj.bounds.left - Bullet.Width), obj.bounds.top + obj.bounds.size.height / 2 - Bullet.Height / 2), Dimension(Bullet.Width, Bullet.Height)), Vector2f(10, 0), direction, 1)
 
   lazy val name = 'negi
 
   def move = copy(bounds = bounds.copy(location = bounds.location + velocity))
+
+  def apply(implicit stage: Stage) = copy(velocity = new Vector2f)
 
   def damaged(implicit stage: Stage): GameplayObject[A, B] = copy(life = stage.objects.any(obj => obj.bounds.intersects(bounds)).fold(life - 1, life))
 

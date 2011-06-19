@@ -11,6 +11,10 @@ case class Stage(objects: GameplayObjects, size: Dimension, viewport: Rectangle)
 
   def this(objects: GameplayObjects, size: Dimension)(implicit properties: GameProperties) = this(objects, size, new Rectangle(properties.size))
 
+  val gravity: Float = 1.0f
+
+  val friction: Float = 0.5f
+
   val effective = Rectangle(viewport.location - Vector2f(properties.size.width, properties.size.height), Dimension(properties.size.width * 3, properties.size.height * 3))
 
   val filteredObjects = objects.filter(_.bounds.intersects(effective))
