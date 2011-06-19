@@ -8,7 +8,7 @@ import Scalaz._
 
 case class Title(implicit val properties: GameProperties) extends Scene {
 
-  val objects = Vector(Background(properties, 'title))
+  val objects = Vector(Background('title))
 
   val bounds =  new Rectangle(properties.size)
 

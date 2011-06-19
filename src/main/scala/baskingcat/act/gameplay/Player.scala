@@ -52,18 +52,20 @@ case class Player[A <: State, B <: Direction](bounds: Rectangle, velocity: Vecto
 
 object Player {
 
-  val Width: Float = 64
+  val Width = 64f
 
-  val Height: Float = 64
+  val Height = 64f
 
-  val Life: Int = 1
+  val Life = 1
 
-  val Speed: Float = 1
+  val Speed = 1f
 
-  val JumpPower: Float = 10
+  val JumpPower = 10f
 
-  def apply[A <: State, B <: Direction](x: Float, y: Float)(implicit properties: GameProperties, mfa: Manifest[A], mfb: Manifest[B]) = {
-    new Player(Rectangle(Vector2f(x, y), Dimension(Width, Height)), Vector2f(0, 0), Player.Life)
+  val Regex = """player.*""".r
+
+  def apply(x: Float, y: Float)(implicit properties: GameProperties) = {
+    new Player[Normal, Forward](Rectangle(Vector2f(x, y), Dimension(Width, Height)), Vector2f(0, 0), Life)
   }
 
 }

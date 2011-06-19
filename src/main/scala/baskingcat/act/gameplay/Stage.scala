@@ -9,9 +9,9 @@ import baskingcat.act._
 
 case class Stage(objects: GameplayObjects, size: Dimension, viewport: Rectangle)(implicit properties: GameProperties) {
 
-  val gravity: Float = 1.0f
+  val gravity = 1.0f
 
-  val friction: Float = 0.5f
+  val friction = 0.5f
 
   val effective = Rectangle(viewport.location - Vector2f(properties.size.width, properties.size.height), Dimension(properties.size.width * 3, properties.size.height * 3))
 
@@ -27,24 +27,20 @@ case class Stage(objects: GameplayObjects, size: Dimension, viewport: Rectangle)
 
 object Stage {
 
-  private val PlayerRegex = """player.*""".r
+  implicit def nodeToFloat(node: NodeSeq) = node.text.toFloat
 
-  private val EnemyRegex = """enemy.*""".r
-
-  implicit def nodeToFloat(node: NodeSeq): Float = node.text.toFloat
-
-  def apply(name: String)(implicit properties: GameProperties): Stage = {
+  def apply(name: String)(implicit properties: GameProperties) = {
     val elem = XML.load(stream(name))
     val data = (elem \\ "rect").map { rect =>
       val x: Float = rect \ "@x"
       val y: Float = rect \ "@y"
       rect.attribute("id").map(_.text).map {
-        case PlayerRegex() => Seq(Player[Normal, Forward](x, y))
-        case EnemyRegex() => Seq(new Enemy[Normal, Backward](x, y))
+        case Player.Regex() => Seq(Player(x, y))
+        case Enemy.Regex() => Seq(Enemy(x, y))
         case _ => for {
           i <- 0 until (rect \ "@width" / Block.Width).toInt
           j <- 0 until (rect \ "@height" / Block.Height).toInt
-          block = new Block[Normal, Unknown](x + i * Block.Width, y + j * Block.Height)
+          block = Block(x + i * Block.Width, y + j * Block.Height)
         } yield block
       }
     }.collect {

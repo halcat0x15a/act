@@ -7,7 +7,7 @@ import org.lwjgl.input._
 
 class LWJGLInput extends Input {
 
-  private lazy val controller: Option[Controller] = {
+  private lazy val controller = {
     val controller = (Controllers.getControllerCount > 0).option(Controllers.getController(0))
     controller |>| { _.setXAxisDeadZone(0.5f) }
     controller
@@ -15,7 +15,7 @@ class LWJGLInput extends Input {
 
   private val keys = Array(Keyboard.KEY_Z, Keyboard.KEY_X, Keyboard.KEY_C)
 
-  override def isButtonPressed(n: Int): Boolean = controller.some(_.isButtonPressed(n)).none(Keyboard.isKeyDown(keys(n)))
+  override def isButtonPressed(n: Int) = controller.some(_.isButtonPressed(n)).none(Keyboard.isKeyDown(keys(n)))
 
   override def isControllerUp = controller.some(_.getYAxisValue < 0).none(Keyboard.isKeyDown(Keyboard.KEY_UP))
 

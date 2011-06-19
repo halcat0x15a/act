@@ -1,7 +1,7 @@
 package baskingcat.act
 
-case class Background(properties: GameProperties, name: Symbol) extends GameObject {
+case class Background(name: Symbol)(implicit properties: GameProperties) extends GameObject {
 
-  lazy val bounds: Rectangle = new Rectangle(properties.size)
+  lazy val bounds = new Rectangle(properties.size)
 
 }

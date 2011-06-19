@@ -28,7 +28,7 @@ case class Rectangle(location: Point, size: Dimension) {
 
   lazy val centerY = y + height / 2
 
-  def contains(rect: Rectangle): Boolean = rect.left >= left && rect.top >= top && rect.right <= right && rect.bottom <= bottom
+  def contains(rect: Rectangle) = rect.left >= left && rect.top >= top && rect.right <= right && rect.bottom <= bottom
 
   def intersects(rect: Rectangle) = rect.right > left && rect.bottom > top && rect.left < right && rect.top < bottom
 

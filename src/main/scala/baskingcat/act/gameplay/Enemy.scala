@@ -7,8 +7,6 @@ import baskingcat.act._
 
 case class Enemy[A <: State, B <: Direction](bounds: Rectangle, velocity: Vector2f, life: Int) extends GameplayObject[A, B] with Live[A, B] with Movable[A, B] with Walkable[A, B] {
 
-  def this(x: Float, y: Float) = this(Rectangle(Vector2f(x, y), Dimension(Player.Width, Player.Height)), Vector2f(0, 0), Enemy.Life)
-
   lazy val name = 'supu
 
   def move = copy(bounds = bounds.copy(location = bounds.location + velocity))
@@ -30,5 +28,11 @@ object Enemy {
   val Height: Float = 64
 
   val Life: Int = 5
+
+  val Regex = """enemy.*""".r
+
+  def apply(x: Float, y: Float) = {
+    new Enemy[Normal, Backward](Rectangle(Vector2f(x, y), Dimension(Width, Height)), Vector2f(0, 0), Life)
+  }
 
 }
