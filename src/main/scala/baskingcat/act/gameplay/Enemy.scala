@@ -5,7 +5,7 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Enemy[A <: State, B <: Direction](bounds: Rectangle, velocity: Vector2[Float], life: Int) extends GameplayObject[A, B] with Live[A, B] with Movable[A, B] with Walkable[A, B] {
+case class Enemy[A <: State, B <: Direction](bounds: Rectangle[Float], velocity: Vector2[Float], life: Int) extends GameplayObject[A, B] with Live[A, B] with Movable[A, B] with Walkable[A, B] {
 
   lazy val name = 'supu
 
@@ -32,7 +32,7 @@ object Enemy {
   val Regex = """enemy.*""".r
 
   def apply(x: Float, y: Float) = {
-    new Enemy[Normal, Backward](Rectangle(Vector2(x, y), Dimension(Width, Height)), Vector2(0, 0), Life)
+    new Enemy[Normal, Backward](Rectangle(Point(x, y), Dimension(Width, Height)), Vector2(0, 0), Life)
   }
 
 }

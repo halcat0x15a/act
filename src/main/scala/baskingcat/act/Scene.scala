@@ -6,7 +6,7 @@ abstract class Scene {
 
   val objects: Vector[GameObject]
 
-  val bounds: Rectangle
+  val bounds: Rectangle[Float]
 
   def logic: Scene
 

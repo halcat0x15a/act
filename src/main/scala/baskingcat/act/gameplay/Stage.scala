@@ -7,7 +7,7 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Stage(objects: GameplayObjects, size: Dimension, viewport: Rectangle)(implicit properties: GameProperties) {
+case class Stage(objects: GameplayObjects, size: Dimension[Float], viewport: Rectangle[Float])(implicit properties: GameProperties) {
 
   val gravity = 1.0f
 
@@ -48,7 +48,7 @@ object Stage {
     }.flatten
     data.find(_.isInstanceOf[Player[_, _]]).map { player =>
       val y = player.bounds.bottom
-      new Stage(Vector(data: _*), Dimension(elem \ "@width", elem \ "@height"), Rectangle(Vector2(0, y), properties.size))
+      new Stage(Vector(data: _*), Dimension(elem \ "@width", elem \ "@height"), Rectangle(Point(0, y), properties.size))
     }.err("Player Not Found.")
   }
 

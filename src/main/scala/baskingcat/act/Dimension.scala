@@ -1,9 +1,13 @@
 package baskingcat.act
 
-case class Dimension(width: Float, height: Float) {
+case class Dimension[T](width: T, height: T)(implicit num: Fractional[T]) {
 
-  lazy val halfWidth = width / 2
+  import num._
 
-  lazy val halfHeight = height / 2
+  lazy val two = one + one
+
+  lazy val halfWidth = width / two
+
+  lazy val halfHeight = height / two
 
 }

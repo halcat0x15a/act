@@ -3,13 +3,9 @@ package baskingcat.act
 import scalaz._
 import Scalaz._
 
-case class Rectangle(location: Vector2[Float], size: Dimension) {
+case class Rectangle[T](location: Point[T], size: Dimension[T])(implicit num: Fractional[T]) {
 
-  def this(location: Vector2[Float]) = this(location, Dimension(0, 0))
-
-  def this(size: Dimension) = this(Vector2(0f, 0f), size)
-
-  def this(x: Float, y: Float, width: Float, height: Float) = this(Vector2[Float](x, y), Dimension(width, height))
+  import num._
 
   lazy val x = location.x
 
@@ -23,16 +19,34 @@ case class Rectangle(location: Vector2[Float], size: Dimension) {
 
   lazy val top = y
 
-  lazy val right = x |+| width
+  lazy val right = x + width
 
-  lazy val bottom = y |+| height
+  lazy val bottom = y + height
 
-  lazy val centerX = x |+| width / 2
+  lazy val two = one + one
 
-  lazy val centerY = y |+| height / 2
+  lazy val centerX = x + width / two
 
-  def contains(rect: Rectangle) = rect.left >= left && rect.top >= top && rect.right <= right && rect.bottom <= bottom
+  lazy val centerY = y + height / two
 
-  def intersects(rect: Rectangle) = rect.right > left && rect.bottom > top && rect.left < right && rect.top < bottom
+  def contains(rect: Rectangle[T]) = rect.left >= left && rect.top >= top && rect.right <= right && rect.bottom <= bottom
+
+  def intersects(rect: Rectangle[T]) = rect.right > left && rect.bottom > top && rect.left < right && rect.top < bottom
+
+}
+
+object Rectangle {
+
+  def apply[T](location: Point[T])(implicit num: Fractional[T]) = {
+    import num._
+    new Rectangle(location, Dimension(zero, zero))
+  }
+
+  def apply[T](size: Dimension[T])(implicit num: Fractional[T]) = {
+    import num._
+    new Rectangle(Point(zero, zero), size)
+  }
+
+  def apply[T](x: T, y: T, width: T, height: T)(implicit num: Fractional[T]) = new Rectangle(Point(x, y), Dimension(width, height))
 
 }

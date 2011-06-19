@@ -10,7 +10,7 @@ case class Title(implicit val properties: GameProperties) extends Scene {
 
   val objects = Vector(Background('title))
 
-  val bounds =  new Rectangle(properties.size)
+  val bounds = Rectangle(properties.size)
 
   def logic: Scene = {
     if (properties.input.isButtonPressed(0))

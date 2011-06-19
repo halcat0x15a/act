@@ -1,9 +1,6 @@
 package baskingcat.act
 
-import scalaz._
-import Scalaz._
-
-case class Vector2[T](x: T, y: T)(implicit num: Numeric[T]) {
+case class Vector2[T](x: T, y: T)(implicit num: Fractional[T]) {
 
   import num._
 

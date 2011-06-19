@@ -302,3 +302,6 @@ compile
 test
 compile
 exit
+compile
+clean
+exit

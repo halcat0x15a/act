@@ -128,7 +128,7 @@ object ACT {
       Log.info("init")
       init()
       Log.info("run")
-      val size = Dimension(Display.getDisplayMode.getWidth, Display.getDisplayMode.getHeight)
+      val size = Dimension(Display.getDisplayMode.getWidth.toFloat, Display.getDisplayMode.getHeight.toFloat)
       val input = new LWJGLInput
       implicit val properties = GameProperties(size, input)
       Log.info("test")

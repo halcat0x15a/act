@@ -5,7 +5,7 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Player[A <: State, B <: Direction](bounds: Rectangle, velocity: Vector2[Float], life: Int)(implicit properties: GameProperties, mfa: Manifest[A], mfb: Manifest[B]) extends GameplayObject[A, B] with Live[A, B] with Walkable[A, B] with Jumpable[A, B] {
+case class Player[A <: State, B <: Direction](bounds: Rectangle[Float], velocity: Vector2[Float], life: Int)(implicit properties: GameProperties, mfa: Manifest[A], mfb: Manifest[B]) extends GameplayObject[A, B] with Live[A, B] with Walkable[A, B] with Jumpable[A, B] {
 
   lazy val name = 'miku
 
@@ -65,7 +65,7 @@ object Player {
   val Regex = """player.*""".r
 
   def apply(x: Float, y: Float)(implicit properties: GameProperties) = {
-    new Player[Normal, Forward](Rectangle(Vector2(x, y), Dimension(Width, Height)), Vector2(0f, 0f), Life)
+    new Player[Normal, Forward](Rectangle(Point(x, y), Dimension(Width, Height)), Vector2(0f, 0f), Life)
   }
 
 }
