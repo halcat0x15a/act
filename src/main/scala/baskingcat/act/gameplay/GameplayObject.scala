@@ -5,9 +5,9 @@ import Scalaz._
 
 import baskingcat.act._
 
-sealed abstract class GameplayObject[+A, +B] extends GameObject
+sealed abstract class GameplayObject[A <: State, B <: Direction] extends GameObject
 
-trait Live[+A, +B] extends GameplayObject[A, B] {
+trait Live[A <: State, B <: Direction] extends GameplayObject[A, B] {
 
   val life: Int
 
@@ -17,7 +17,7 @@ trait Live[+A, +B] extends GameplayObject[A, B] {
 
 }
 
-trait Movable[+A, +B] extends GameplayObject[A, B] {
+trait Movable[A <: State, B <: Direction] extends GameplayObject[A, B] {
 
   val velocity: Vector2f
 
@@ -29,25 +29,25 @@ trait Movable[+A, +B] extends GameplayObject[A, B] {
 
 }
 
-trait Walkable[+A, +B] extends Movable[A, B] {
+trait Walkable[A <: State, B <: Direction] extends Movable[A, B] {
 
   def walk(implicit stage: Stage): GameplayObject[Walking, _ <: Direction]
 
 }
 
-trait Jumpable[+A, +B] extends Movable[A, B] {
+trait Jumpable[A <: State, B <: Direction] extends Movable[A, B] {
 
   def jump(implicit stage: Stage): GameplayObject[Jumping, B]
 
 }
 
-case class Player[+A, +B](bounds: Rectangle, velocity: Vector2f, direction: Symbol, life: Int)(implicit properties: GameProperties, mfa: Manifest[A], mfb: Manifest[B]) extends GameplayObject[A, B] with Live[A, B] with Walkable[A, B] with Jumpable[A, B] {
+case class Player[A <: State, B <: Direction](bounds: Rectangle, velocity: Vector2f, direction: Symbol, life: Int)(implicit properties: GameProperties, mfa: Manifest[A], mfb: Manifest[B]) extends GameplayObject[A, B] with Live[A, B] with Walkable[A, B] with Jumpable[A, B] {
 
   def this(x: Float, y: Float)(implicit properties: GameProperties, mfa: Manifest[A], mfb: Manifest[B]) = this(Rectangle(Vector2f(x, y), Dimension(Player.Width, Player.Height)), Vector2f(0, 0), 'right, Player.Life)
 
   lazy val name = Symbol(mfa.toString)
 
-  def move = copy[Moving, B](bounds = bounds.copy(location = bounds.location + velocity))
+  def move = copy(bounds = bounds.copy(location = bounds.location + velocity))
 
   def walk(implicit stage: Stage) = {
     val vx = if (properties.input.isControllerRight)
@@ -56,12 +56,12 @@ case class Player[+A, +B](bounds: Rectangle, velocity: Vector2f, direction: Symb
       velocity.x - Player.Speed
     else
       velocity.x
-    copy[Walking, Forward](velocity = velocity.copy(x = vx))
+    copy(velocity = velocity.copy(x = vx))
   }
 
   def jump(implicit stage: Stage) = {
     val vy = (properties.input.isButtonPressed(0) && stage.bottomBlock(this).isDefined) ? -Player.JumpPower | velocity.y
-    copy[Jumping, B](velocity = velocity.copy(y = vy))
+    copy(velocity = velocity.copy(y = vy))
   }
 
   def apply(implicit stage: Stage) = {
@@ -72,12 +72,12 @@ case class Player[+A, +B](bounds: Rectangle, velocity: Vector2f, direction: Symb
     else
       velocity.x
     val vy = velocity.y + stage.gravity
-    copy[Moving, B](velocity = Vector2f(vx, vy))
+    copy(velocity = Vector2f(vx, vy))
   }
 
   def detect(obj: GameplayObject[_, _]) = !obj.isInstanceOf[Block[_, _]] && obj.bounds.intersects(bounds)
 
-  def damaged(implicit stage: Stage) = copy[A, B](life = stage.objects.any(detect).fold(life - 1, life))
+  def damaged(implicit stage: Stage) = copy(life = stage.objects.any(detect).fold(life - 1, life))
 
 }
 
@@ -95,7 +95,7 @@ object Player {
 
 }
 
-case class Enemy[+A, +B](bounds: Rectangle, velocity: Vector2f, direction: Symbol, life: Int) extends GameplayObject[A, B] with Live[A, B] with Movable[A, B] with Walkable[A, B] {
+case class Enemy[A <: State, B <: Direction](bounds: Rectangle, velocity: Vector2f, direction: Symbol, life: Int) extends GameplayObject[A, B] with Live[A, B] with Movable[A, B] with Walkable[A, B] {
 
   def this(x: Float, y: Float) = this(Rectangle(Vector2f(x, y), Dimension(Player.Width, Player.Height)), Vector2f(0, 0), 'right, Enemy.Life)
 
@@ -123,7 +123,7 @@ object Enemy {
 
 }
 
-case class Block[+A, +B](bounds: Rectangle, velocity: Vector2f) extends GameplayObject[A, B] {
+case class Block[A <: State, B <: Direction](bounds: Rectangle, velocity: Vector2f) extends GameplayObject[A, B] {
 
   def this(x: Float, y: Float) = this(Rectangle(Vector2f(x, y), Dimension(Block.Width, Block.Height)), Vector2f(0, 0))
 
@@ -139,7 +139,7 @@ object Block {
 
 }
 
-case class Bullet[+A, +B](bounds: Rectangle, velocity: Vector2f, direction: Symbol, life: Int) extends GameplayObject[A, B] with Movable[A, B] with Live[A, B] {
+case class Bullet[A <: State, B <: Direction](bounds: Rectangle, velocity: Vector2f, direction: Symbol, life: Int) extends GameplayObject[A, B] with Movable[A, B] with Live[A, B] {
 
   def this(obj: GameplayObject[_, _], direction: Symbol) = this(Rectangle(Vector2f((direction == 'right).fold(obj.bounds.right, obj.bounds.left - Bullet.Width), obj.bounds.top + obj.bounds.size.height / 2 - Bullet.Height / 2), Dimension(Bullet.Width, Bullet.Height)), Vector2f(10, 0), direction, 1)
 
