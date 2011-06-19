@@ -9,8 +9,6 @@ import baskingcat.act._
 
 case class Stage(objects: GameplayObjects, size: Dimension, viewport: Rectangle)(implicit properties: GameProperties) {
 
-  def this(objects: GameplayObjects, size: Dimension)(implicit properties: GameProperties) = this(objects, size, new Rectangle(properties.size))
-
   val gravity: Float = 1.0f
 
   val friction: Float = 0.5f
@@ -24,8 +22,6 @@ case class Stage(objects: GameplayObjects, size: Dimension, viewport: Rectangle)
   val player = objects.collect {
     case player: Player[_, _] => player
   }.headOption.err("Player not found")
-
-  def bottomBlock(obj: GameplayObject[_, _]) = blocks.find(block => obj.bounds.top == player.bounds.bottom && block.bounds.left < obj.bounds.right && block.bounds.right < obj.bounds.left)
 
 }
 
@@ -43,7 +39,7 @@ object Stage {
       val x: Float = rect \ "@x"
       val y: Float = rect \ "@y"
       rect.attribute("id").map(_.text).map {
-        case PlayerRegex() => Seq(new Player[Normal, Forward](x, y))
+        case PlayerRegex() => Seq(Player[Normal, Forward](x, y))
         case EnemyRegex() => Seq(new Enemy[Normal, Backward](x, y))
         case _ => for {
           i <- 0 until (rect \ "@width" / Block.Width).toInt
