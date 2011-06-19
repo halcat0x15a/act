@@ -5,15 +5,15 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Enemy[A <: State, B <: Direction](bounds: Rectangle, velocity: Vector2f, life: Int) extends GameplayObject[A, B] with Live[A, B] with Movable[A, B] with Walkable[A, B] {
+case class Enemy[A <: State, B <: Direction](bounds: Rectangle, velocity: Vector2[Float], life: Int) extends GameplayObject[A, B] with Live[A, B] with Movable[A, B] with Walkable[A, B] {
 
   lazy val name = 'supu
 
-  def move = copy(bounds = bounds.copy(location = bounds.location + velocity))
+  def move = copy(bounds = bounds.copy(location = bounds.location |+| velocity))
 
-  def walk(implicit stage: Stage) = copy(velocity = new Vector2f)
+  def walk(implicit stage: Stage) = copy(velocity = Vector2(0f, 0f))
 
-  def apply(implicit stage: Stage) = copy(velocity = new Vector2f)
+  def apply(implicit stage: Stage) = copy(velocity = Vector2(0f, 0f))
 
   def detect(obj: GameplayObject[_, _]) = !obj.isInstanceOf[Block[_, _]] && !obj.isInstanceOf[Enemy[_, _]] && obj.bounds.intersects(bounds)
 
@@ -32,7 +32,7 @@ object Enemy {
   val Regex = """enemy.*""".r
 
   def apply(x: Float, y: Float) = {
-    new Enemy[Normal, Backward](Rectangle(Vector2f(x, y), Dimension(Width, Height)), Vector2f(0, 0), Life)
+    new Enemy[Normal, Backward](Rectangle(Vector2(x, y), Dimension(Width, Height)), Vector2(0, 0), Life)
   }
 
 }

@@ -1,12 +1,15 @@
 package baskingcat.act
 
-case class Rectangle(location: Point, size: Dimension) {
+import scalaz._
+import Scalaz._
 
-  def this(location: Point) = this(location, Dimension(0, 0))
+case class Rectangle(location: Vector2[Float], size: Dimension) {
 
-  def this(size: Dimension) = this(Vector2f(0, 0), size)
+  def this(location: Vector2[Float]) = this(location, Dimension(0, 0))
 
-  def this(x: Float, y: Float, width: Float, height: Float) = this(Vector2f(x, y), Dimension(width, height))
+  def this(size: Dimension) = this(Vector2(0f, 0f), size)
+
+  def this(x: Float, y: Float, width: Float, height: Float) = this(Vector2[Float](x, y), Dimension(width, height))
 
   lazy val x = location.x
 
@@ -20,13 +23,13 @@ case class Rectangle(location: Point, size: Dimension) {
 
   lazy val top = y
 
-  lazy val right = x + width
+  lazy val right = x |+| width
 
-  lazy val bottom = y + height
+  lazy val bottom = y |+| height
 
-  lazy val centerX = x + width / 2
+  lazy val centerX = x |+| width / 2
 
-  lazy val centerY = y + height / 2
+  lazy val centerY = y |+| height / 2
 
   def contains(rect: Rectangle) = rect.left >= left && rect.top >= top && rect.right <= right && rect.bottom <= bottom
 

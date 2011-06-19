@@ -78,7 +78,7 @@ object ACT {
     opengl.glPushMatrix {
       glLoadIdentity()
       scene.bounds.location match {
-        case Vector2f(x, y) => glTranslatef(-x, -y, 0)
+        case Vector2(x, y) => glTranslatef(-x, -y, 0)
       }
       Color.white.bind()
       scene.objects.withFilter(_.bounds.intersects(scene.bounds)).foreach { obj =>

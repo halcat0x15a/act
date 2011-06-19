@@ -8,19 +8,22 @@ import baskingcat.act.title._
 
 object GameplayTest extends Properties("baskingcat.act.gameplay.Gameplay") {
 
-  val gameplay = new Gameplay("stages/test.svg")(GameProperties(Dimension(800, 600), new TestController))
+  val gameplay = new Gameplay("stages/test.svg")(GameProperties(Dimension(800, 600), new TestInput))
 
   property("logic") = Prop.forAll((i: Int) => !gameplay.logic.isInstanceOf[Title])
 
 }
 
-class TestController extends Controller {
+class TestInput extends Input {
 
   def isButtonPressed(n: Int): Boolean = false
 
   def isControllerRight = false
+
   def isControllerLeft = false
+
   def isControllerDown = false
+
   def isControllerUp = false
 
 }
