@@ -305,3 +305,8 @@ exit
 compile
 clean
 exit
+run
+compile
+run
+compile
+run
