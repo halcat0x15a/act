@@ -5,7 +5,7 @@ import Scalaz._
 
 import baskingcat.act._
 
-abstract class GameplayObject[A <: State, B <: Direction] extends GameObject
+abstract class GameplayObject[A <: State, B <: Direction](implicit val mfa: Manifest[A], val mfb: Manifest[B]) extends GameObject
 
 trait Live[A <: State, B <: Direction] extends GameplayObject[A, B] {
 
@@ -21,7 +21,7 @@ trait Movable[A <: State, B <: Direction] extends GameplayObject[A, B] {
 
   val velocity: Vector2[Float]
 
-  def move: GameplayObject[_ <: Moving, B]
+  def move(implicit ev: A <:< Moving): GameplayObject[_ <: Moving, B]
 
   def apply(implicit stage: Stage): GameplayObject[_ <: Moving, B]
 
@@ -29,12 +29,12 @@ trait Movable[A <: State, B <: Direction] extends GameplayObject[A, B] {
 
 trait Walkable[A <: State, B <: Direction] extends Movable[A, B] {
 
-  def walk(implicit stage: Stage): GameplayObject[_ <: Walking, _ <: Direction]
+  def walk(implicit stage: Stage): GameplayObject[_ <: Moving, _ <: Direction]
 
 }
 
 trait Jumpable[A <: State, B <: Direction] extends Movable[A, B] {
 
-  def jump(implicit stage: Stage): GameplayObject[_ <: Jumping, B]
+  def jump(implicit ev: A <:< Standing, stage: Stage): GameplayObject[_ <: Jumping, B]
 
 }

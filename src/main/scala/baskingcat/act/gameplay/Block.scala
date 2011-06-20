@@ -2,7 +2,7 @@ package baskingcat.act.gameplay
 
 import baskingcat.act._
 
-case class Block[A <: State, B <: Direction](bounds: Rectangle[Float], velocity: Vector2[Float]) extends GameplayObject[A, B] {
+case class Block[A <: State, B <: Direction](bounds: Rectangle[Float], velocity: Vector2[Float])(implicit mfa: Manifest[A], mfb: Manifest[B]) extends GameplayObject[A, B] {
 
   lazy val name = 'block
 

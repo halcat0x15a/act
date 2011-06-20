@@ -5,13 +5,13 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Bullet[A <: State, B <: Direction](owner: GameplayObject[_ <: State, B], bounds: Rectangle[Float], velocity: Vector2[Float], life: Int)(implicit mfb: Manifest[B]) extends GameplayObject[A, B] with Movable[A, B] with Live[A, B] {
+case class Bullet[A <: State, B <: Direction](owner: GameplayObject[_ <: State, B], bounds: Rectangle[Float], velocity: Vector2[Float], life: Int)(implicit mfa: Manifest[A], mfb: Manifest[B]) extends GameplayObject[A, B] with Movable[A, B] with Live[A, B] {
 
   lazy val name = 'negi
 
-  def move = copy(bounds = bounds.copy(location = bounds.location |+| velocity))
+  def move(implicit ev: <:<[A, baskingcat.act.gameplay.Moving]) = copy[Moving, B](bounds = bounds.copy(location = bounds.location |+| velocity))
 
-  def apply(implicit stage: Stage) = copy(velocity = Vector2(0f, 0f))
+  def apply(implicit stage: Stage) = copy[Moving, B](velocity = Vector2(0f, 0f))
 
   def damaged(implicit stage: Stage): GameplayObject[A, B] = copy(life = stage.objects.any(obj => obj.bounds.intersects(bounds)).fold(life - 1, life))
 

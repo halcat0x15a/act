@@ -1,14 +1,16 @@
 package baskingcat.act.gameplay
 
-sealed abstract class State
+sealed abstract trait State
 
-sealed abstract class Normal extends State
+sealed abstract trait Normal extends Standing
 
-sealed abstract class Moving extends State
+sealed abstract trait Moving extends State
 
-sealed abstract class Walking extends Moving
+sealed abstract trait Walking extends Moving with Standing
 
-sealed abstract class Jumping extends Walking
+sealed abstract trait Jumping extends Moving
+
+sealed abstract trait Standing extends State
 
 object Normal {
 

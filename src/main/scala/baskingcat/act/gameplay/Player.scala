@@ -9,28 +9,32 @@ case class Player[A <: State, B <: Direction](bounds: Rectangle[Float], velocity
 
   lazy val name = 'miku
 
-  def move = mfa.erasure match {
-    case Jumping.Class => copy[Jumping, B](bounds = bounds.copy(location = bounds.location |+| velocity))
-    case Walking.Class => copy[Walking, B](bounds = bounds.copy(location = bounds.location |+| velocity))
-    case _ => copy[Moving, B](bounds = bounds.copy(location = bounds.location |+| velocity))
+  def move(implicit ev: A <:< Moving) = {
+    def c[C <: State](implicit mf: Manifest[C]) = copy[C, B](bounds = bounds.copy(location = bounds.location |+| velocity))
+    mfa.erasure match {
+      case Jumping.Class => c[Jumping]
+      case Walking.Class => c[Walking]
+      case _ => c[Moving]
+    }
   }
 
-  def walk(implicit stage: Stage): GameplayObject[_ <: Walking, _ <: Direction] = {
+  def walk(implicit stage: Stage): GameplayObject[_ <: Moving, _ <: Direction] = {
     val vx = if (properties.input.isControllerRight)
-      velocity.x |+|Player.Speed
-    else if (properties.input.isControllerLeft)
+      velocity.x |+| Player.Speed
+    else if (properties.input.isControllerLeft) 
       velocity.x - Player.Speed
     else
       velocity.x
+    def c[C <: State](implicit mf: Manifest[C]) = copy[C, B](velocity = velocity.copy(x = vx))
     mfa.erasure match {
-      case Jumping.Class => copy[Jumping, B](velocity = velocity.copy(x = vx))
-      case _ => copy[Walking, B](velocity = velocity.copy(x = vx))
+      case Jumping.Class => c[Jumping]
+      case _ => c[Walking]
     }
   }
 
   def ground(implicit stage: Stage) = stage.blocks.find(block => block.bounds.intersects(bounds) && block.bounds.bottom > bounds.bottom)
 
-  def jump(implicit stage: Stage) = {
+  def jump(implicit ev: A <:< Standing, stage: Stage) = {
     val vy = (properties.input.isButtonPressed(0) && mfa.erasure != Jumping.Class) ? -Player.JumpPower | velocity.y
     copy[Jumping, B](velocity = velocity.copy(y = vy))
   }
@@ -48,10 +52,11 @@ case class Player[A <: State, B <: Direction](bounds: Rectangle[Float], velocity
     else
       velocity.x
     val vy = ground ? 0f | (velocity.y |+| stage.gravity)
+    def c[C <: State](implicit mf: Manifest[C]) = copy[C, B](bounds = bounds.copy(location = Vector2(x, y)), velocity = Vector2(vx, vy))
     mfa.erasure match {
-      case Jumping.Class if y == bounds.location.y => copy[Jumping, B](bounds = bounds.copy(location = Vector2(x, y)), velocity = Vector2(vx, vy))
-      case Walking.Class => copy[Walking, B](bounds = bounds.copy(location = Vector2(x, y)), velocity = Vector2(vx, vy))
-      case _ => copy[Moving, B](bounds = bounds.copy(location = Vector2(x, y)), velocity = Vector2(vx, vy))
+      case Jumping.Class if x == bounds.location.x && y == bounds.location.y => c[Jumping]
+      case Walking.Class => c[Walking]
+      case _ => c[Moving]
     }
   }
 

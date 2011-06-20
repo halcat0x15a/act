@@ -5,15 +5,15 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Enemy[A <: State, B <: Direction](bounds: Rectangle[Float], velocity: Vector2[Float], life: Int) extends GameplayObject[A, B] with Live[A, B] with Movable[A, B] with Walkable[A, B] {
+case class Enemy[A <: State, B <: Direction](bounds: Rectangle[Float], velocity: Vector2[Float], life: Int)(implicit mfa: Manifest[A], mfb: Manifest[B]) extends GameplayObject[A, B] with Live[A, B] with Movable[A, B] with Walkable[A, B] {
 
   lazy val name = 'supu
 
-  def move = copy(bounds = bounds.copy(location = bounds.location |+| velocity))
+  def move(implicit ev: <:<[A,Moving]) = copy[Moving, B](bounds = bounds.copy(location = bounds.location |+| velocity))
 
-  def walk(implicit stage: Stage) = copy(velocity = Vector2(0f, 0f))
+  def walk(implicit stage: Stage) = copy[Walking, B](velocity = Vector2(0f, 0f))
 
-  def apply(implicit stage: Stage) = copy(velocity = Vector2(0f, 0f))
+  def apply(implicit stage: Stage) = copy[Moving, B](velocity = Vector2(0f, 0f))
 
   def detect(obj: GameplayObject[_, _]) = !obj.isInstanceOf[Block[_, _]] && !obj.isInstanceOf[Enemy[_, _]] && obj.bounds.intersects(bounds)
 
