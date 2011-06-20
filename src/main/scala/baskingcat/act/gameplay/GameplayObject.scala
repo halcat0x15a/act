@@ -21,20 +21,20 @@ trait Movable[A <: State, B <: Direction] extends GameplayObject[A, B] {
 
   val velocity: Vector2[Float]
 
-  def move: GameplayObject[Moving, B]
+  def move: GameplayObject[_ <: Moving, B]
 
-  def apply(implicit stage: Stage): GameplayObject[Moving, B]
+  def apply(implicit stage: Stage): GameplayObject[_ <: Moving, B]
 
 }
 
 trait Walkable[A <: State, B <: Direction] extends Movable[A, B] {
 
-  def walk(implicit stage: Stage): GameplayObject[Walking, _ <: Direction]
+  def walk(implicit stage: Stage): GameplayObject[_ <: Walking, _ <: Direction]
 
 }
 
 trait Jumpable[A <: State, B <: Direction] extends Movable[A, B] {
 
-  def jump(implicit stage: Stage): GameplayObject[Jumping, B]
+  def jump(implicit stage: Stage): GameplayObject[_ <: Jumping, B]
 
 }

@@ -9,23 +9,30 @@ case class Player[A <: State, B <: Direction](bounds: Rectangle[Float], velocity
 
   lazy val name = 'miku
 
-  def move = copy(bounds = bounds.copy(location = bounds.location |+| velocity))
+  def move = mfa.erasure match {
+    case Jumping.Class => copy[Jumping, B](bounds = bounds.copy(location = bounds.location |+| velocity))
+    case Walking.Class => copy[Walking, B](bounds = bounds.copy(location = bounds.location |+| velocity))
+    case _ => copy[Moving, B](bounds = bounds.copy(location = bounds.location |+| velocity))
+  }
 
-  def walk(implicit stage: Stage) = {
+  def walk(implicit stage: Stage): GameplayObject[_ <: Walking, _ <: Direction] = {
     val vx = if (properties.input.isControllerRight)
       velocity.x |+|Player.Speed
     else if (properties.input.isControllerLeft)
       velocity.x - Player.Speed
     else
       velocity.x
-    copy(velocity = velocity.copy(x = vx))
+    mfa.erasure match {
+      case Jumping.Class => copy[Jumping, B](velocity = velocity.copy(x = vx))
+      case _ => copy[Walking, B](velocity = velocity.copy(x = vx))
+    }
   }
 
   def ground(implicit stage: Stage) = stage.blocks.find(block => block.bounds.intersects(bounds) && block.bounds.bottom > bounds.bottom)
 
   def jump(implicit stage: Stage) = {
-    val vy = (properties.input.isButtonPressed(0) && ground.isDefined) ? -Player.JumpPower | velocity.y
-    copy(velocity = velocity.copy(y = vy))
+    val vy = (properties.input.isButtonPressed(0) && mfa.erasure != Jumping.Class) ? -Player.JumpPower | velocity.y
+    copy[Jumping, B](velocity = velocity.copy(y = vy))
   }
 
   def apply(implicit stage: Stage) = {
@@ -41,12 +48,16 @@ case class Player[A <: State, B <: Direction](bounds: Rectangle[Float], velocity
     else
       velocity.x
     val vy = ground ? 0f | (velocity.y |+| stage.gravity)
-    copy(bounds = bounds.copy(location = Vector2(x, y)), velocity = Vector2(vx, vy))
+    mfa.erasure match {
+      case Jumping.Class if y == bounds.location.y => copy[Jumping, B](bounds = bounds.copy(location = Vector2(x, y)), velocity = Vector2(vx, vy))
+      case Walking.Class => copy[Walking, B](bounds = bounds.copy(location = Vector2(x, y)), velocity = Vector2(vx, vy))
+      case _ => copy[Moving, B](bounds = bounds.copy(location = Vector2(x, y)), velocity = Vector2(vx, vy))
+    }
   }
 
   def detect(obj: GameplayObject[_, _]) = !obj.isInstanceOf[Block[_, _]] && obj.bounds.intersects(bounds)
 
-  def damaged(implicit stage: Stage) = copy(life = stage.objects.any(detect).fold(life - 1, life))
+  def damaged(implicit stage: Stage) = copy[A, B](life = stage.objects.any(detect).fold(life - 1, life))
 
 }
 

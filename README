@@ -1,3 +1,5 @@
 このプログラムが依存しているライブラリ:
+ - Scalaz http://code.google.com/p/scalaz/
  - LWJGL http://www.lwjgl.org/
+ - Slick http://slick.cokeandcode.com/
  - gamelib https://github.com/halcat0x15a/gamelib
