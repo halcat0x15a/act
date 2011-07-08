@@ -19,7 +19,7 @@ trait Live[A <: State, B <: Direction] extends GameplayObject[A, B] {
 
 trait Movable[A <: State, B <: Direction] extends GameplayObject[A, B] {
 
-  val velocity: Vector2[Float]
+  val velocity: Vector2D[Float]
 
   def move(implicit ev: A <:< Moving): GameplayObject[_ <: Moving, B]
 

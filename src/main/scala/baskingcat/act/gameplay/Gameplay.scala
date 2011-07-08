@@ -41,7 +41,7 @@ case class Gameplay(stage: Stage)(implicit val properties: GameProperties) exten
           stage.size.height - properties.size.height
         else
           player.bounds.centerY - properties.size.halfHeight
-        Vector2(x, y)
+        Vector2D(x, y)
       }
       Gameplay(stage.copy(objects = objects, viewport = bounds.copy(location = location)))
     }.none(Title())

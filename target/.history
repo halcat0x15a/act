@@ -318,3 +318,12 @@ clean
 compile
 clean
 exit
+compile
+exit
+compile
+exit
+compile
+exit
+compile
+clean
+exit

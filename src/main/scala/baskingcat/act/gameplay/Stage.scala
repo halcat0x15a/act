@@ -13,7 +13,7 @@ case class Stage(objects: GameplayObjects, size: Dimension[Float], viewport: Rec
 
   val friction = 0.5f
 
-  val effective = Rectangle(viewport.location - Vector2(properties.size.width, properties.size.height), Dimension(properties.size.width * 3, properties.size.height * 3))
+  val effective = Rectangle(viewport.location - Vector2D(properties.size.width, properties.size.height), Dimension(properties.size.width * 3, properties.size.height * 3))
 
   val filteredObjects = objects.filter(_.bounds.intersects(effective))
 
