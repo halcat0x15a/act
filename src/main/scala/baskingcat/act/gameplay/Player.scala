@@ -5,7 +5,7 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Player[A <: State, B <: Direction](state: A, direction: B, bounds: Rectangle[Float], velocity: Vector2D[Float], life: Int)(implicit properties: GameProperties) extends GameObject with HasState[A] with HasDirection[B] with Live[A] with Walkable[A, B] with Jumpable[A, B] {
+case class Player[A <: State, B <: Direction](state: A, direction: B, bounds: Rectangle[Float], velocity: Vector2D[Float], life: Int)(implicit properties: GameProperties) extends GameplayObject with HasState[A] with HasDirection[B] with Live[A] with Walkable[A, B] with Jumpable[A, B] {
 
   lazy val name = 'miku
 
@@ -47,6 +47,8 @@ case class Player[A <: State, B <: Direction](state: A, direction: B, bounds: Re
     val vy = ground ? 0f | (velocity.y |+| stage.gravity)
     copy(bounds = bounds.copy(location = Vector2D(x, y)), velocity = Vector2D(vx, vy))
   }
+
+  def update = this
 
   def detect(obj: GameObject) = !obj.isInstanceOf[Block] && obj.bounds.intersects(bounds)
 

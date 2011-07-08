@@ -342,3 +342,11 @@ run
 compile
 clean
 exit
+compile
+clean
+compile
+clean
+compile
+exit
+clean
+exit

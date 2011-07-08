@@ -13,32 +13,31 @@ case class Gameplay(stage: Stage)(implicit val properties: GameProperties) exten
 
   def this(name: String)(implicit properties: GameProperties) = this(Stage(name))
 
-  implicit val s = stage
+  private implicit val s = stage
 
   val objects = stage.objects
 
   val bounds = stage.viewport
 
-  def update(obj: GameObject) = obj
+  private def coord(displaySize: Float, stageSize: Float, center: Float) = {
+    val halfDisplaySize = displaySize / 2
+    if (center < halfDisplaySize)
+      0
+    else if (center > stageSize - halfDisplaySize)
+      stageSize - halfDisplaySize
+    else
+      center - halfDisplaySize
+  }
 
   def logic: Scene = if (properties.input.isButtonPressed(5)) {
     Title()
   } else {
-    val objects = ((_: GameObjects).map(update)).first.apply(stage.objects.partition(_.bounds.intersects(bounds))).fold(_ <+> _)
+    val update = (_: GameplayObjects).map(_.update)
+    val objects = update.first.apply(stage.objects.partition(_.bounds.intersects(bounds))).fold(_ <+> _)
     objects.find(_.isInstanceOf[Player[_, _]]).some[Scene] { player =>
       val location = {
-        val x = if (player.bounds.centerX < properties.size.halfWidth)
-          0
-        else if (player.bounds.centerX > stage.size.width - properties.size.halfWidth)
-          stage.size.width - properties.size.width
-        else
-          player.bounds.centerX - properties.size.halfWidth
-        val y = if (player.bounds.centerY < properties.size.halfHeight)
-          0
-        else if (player.bounds.centerY > stage.size.height - properties.size.halfHeight)
-          stage.size.height - properties.size.height
-        else
-          player.bounds.centerY - properties.size.halfHeight
+        val x = coord(properties.size.width, stage.size.width, player.bounds.centerX)
+        val y = coord(properties.size.height, stage.size.height, player.bounds.centerY)
         Vector2D(x, y)
       }
       Gameplay(stage.copy(objects = objects, viewport = bounds.copy(location = location)))

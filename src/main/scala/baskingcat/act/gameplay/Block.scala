@@ -2,9 +2,11 @@ package baskingcat.act.gameplay
 
 import baskingcat.act._
 
-case class Block(bounds: Rectangle[Float], velocity: Vector2D[Float]) extends GameObject {
+case class Block(bounds: Rectangle[Float], velocity: Vector2D[Float]) extends GameplayObject {
 
   lazy val name = 'block
+
+  def update = this
 
 }
 
