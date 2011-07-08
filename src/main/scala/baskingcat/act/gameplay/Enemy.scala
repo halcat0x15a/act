@@ -9,15 +9,11 @@ case class Enemy[A <: State, B <: Direction](state: A, direction: B, bounds: Rec
 
   lazy val name = 'supu
 
-  def move(implicit ev: A <:< Moving) = state match {
-    case m: Moving => copy(state = m, bounds = bounds.copy(location = bounds.location |+| velocity))
-  }
+  def move(implicit ev: A <:< Moving) = copy(bounds = bounds.copy(location = bounds.location |+| velocity))
 
   def walk(implicit stage: Stage) = copy(state = Walking(), velocity = Vector2D(0f, 0f))
 
-  def apply(implicit stage: Stage) = state match {
-    case m: Moving => copy(state = m, velocity = Vector2D(0f, 0f))
-  }
+  def apply(implicit stage: Stage) = copy(velocity = Vector2D(0f, 0f))
 
   def detect(obj: GameObject) = !obj.isInstanceOf[Block] && !obj.isInstanceOf[Enemy[_, _]] && obj.bounds.intersects(bounds)
 

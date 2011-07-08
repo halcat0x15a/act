@@ -9,9 +9,7 @@ case class Player[A <: State, B <: Direction](state: A, direction: B, bounds: Re
 
   lazy val name = 'miku
 
-  def move(implicit ev: A <:< Moving) = state match {
-    case m: Moving => copy(state = m, bounds = bounds.copy(location = bounds.location |+| velocity))
-  }
+  def move(implicit ev: A <:< Moving) = copy(bounds = bounds.copy(location = bounds.location |+| velocity))
 
   def walk(implicit stage: Stage): Walkable[_ <: Moving, _ <: Direction] = {
     val vx = if (properties.input.isControllerRight)
@@ -47,9 +45,7 @@ case class Player[A <: State, B <: Direction](state: A, direction: B, bounds: Re
     else
       velocity.x
     val vy = ground ? 0f | (velocity.y |+| stage.gravity)
-    state match {
-      case m: Moving => copy(state = m, bounds = bounds.copy(location = Vector2D(x, y)), velocity = Vector2D(vx, vy))
-    }
+    copy(bounds = bounds.copy(location = Vector2D(x, y)), velocity = Vector2D(vx, vy))
   }
 
   def detect(obj: GameObject) = !obj.isInstanceOf[Block] && obj.bounds.intersects(bounds)

@@ -19,9 +19,7 @@ case class Gameplay(stage: Stage)(implicit val properties: GameProperties) exten
 
   val bounds = stage.viewport
 
-  def update(obj: GameObject): GameObject = {
-    obj
-  }
+  def update(obj: GameObject) = obj
 
   def logic: Scene = if (properties.input.isButtonPressed(5)) {
     Title()

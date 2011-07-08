@@ -9,13 +9,9 @@ case class Bullet[A <: State, B <: Direction](owner: GameObject with HasDirectio
 
   lazy val name = 'negi
 
-  def move(implicit ev: A <:< Moving) = state match {
-    case m: Moving => copy(state = m, bounds = bounds.copy(location = bounds.location |+| velocity))
-  }
+  def move(implicit ev: A <:< Moving) = copy(bounds = bounds.copy(location = bounds.location |+| velocity))
 
-  def apply(implicit stage: Stage) = state match {
-    case m: Moving => copy(state = m, velocity = Vector2D(0f, 0f))
-  }
+  def apply(implicit stage: Stage) = copy(velocity = Vector2D(0f, 0f))
 
 }
 

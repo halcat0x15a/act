@@ -31,9 +31,9 @@ trait Movable[A <: State, B <: Direction] extends GameObject with HasState[A] wi
 
   val velocity: Vector2D[Float]
 
-  def move(implicit ev: A <:< Moving): Movable[_ <: Moving, B]
+  def move(implicit ev: A <:< Moving): Movable[A, B]
 
-  def apply(implicit stage: Stage): Movable[_ <: Moving, B]
+  def apply(implicit stage: Stage): Movable[_ <: State, B]
 
 }
 

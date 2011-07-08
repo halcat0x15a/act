@@ -337,3 +337,8 @@ compile
 clean
 compile
 exit
+compile
+run
+compile
+clean
+exit
