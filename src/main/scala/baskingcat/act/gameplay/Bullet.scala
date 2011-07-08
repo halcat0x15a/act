@@ -5,15 +5,17 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Bullet[A <: State, B <: Direction](owner: GameplayObject[_ <: State, B], bounds: Rectangle[Float], velocity: Vector2D[Float], life: Int)(implicit mfa: Manifest[A], mfb: Manifest[B]) extends GameplayObject[A, B] with Movable[A, B] with Live[A, B] {
+case class Bullet[A <: State, B <: Direction](owner: GameObject with HasDirection[B], state: A, direction: B, bounds: Rectangle[Float], velocity: Vector2D[Float]) extends GameObject with HasState[A] with HasDirection[B] with Movable[A, B] {
 
   lazy val name = 'negi
 
-  def move(implicit ev: <:<[A, baskingcat.act.gameplay.Moving]) = copy[Moving, B](bounds = bounds.copy(location = bounds.location |+| velocity))
+  def move(implicit ev: A <:< Moving) = state match {
+    case m: Moving => copy(state = m, bounds = bounds.copy(location = bounds.location |+| velocity))
+  }
 
-  def apply(implicit stage: Stage) = copy[Moving, B](velocity = Vector2D(0f, 0f))
-
-  def damaged(implicit stage: Stage): GameplayObject[A, B] = copy(life = stage.objects.any(obj => obj.bounds.intersects(bounds)).fold(life - 1, life))
+  def apply(implicit stage: Stage) = state match {
+    case m: Moving => copy(state = m, velocity = Vector2D(0f, 0f))
+  }
 
 }
 
@@ -25,10 +27,10 @@ object Bullet {
 
   val Speed: Float = 10
 
-  def apply[A <: State, B <: Direction](owner: GameplayObject[_ <: State, B])(implicit mfb: Manifest[B]) = {
-    val x = (mfb.erasure == Forward.Class).fold(owner.bounds.right, owner.bounds.left - Width)
+  def apply[A <: State, B <: Direction](owner: GameObject with HasDirection[B]) = {
+    val x = owner.direction.isInstanceOf[Forward].fold(owner.bounds.right, owner.bounds.left - Width)
     val y = owner.bounds.top |+| owner.bounds.size.height / 2 - Height / 2
-    new Bullet(owner, Rectangle(Point(x, y), Dimension(Width, Height)), Vector2D(Speed, 0), 1)
+    new Bullet(owner, Normal(), owner.direction, Rectangle(Point(x, y), Dimension(Width, Height)), Vector2D(Speed, 0))
   }
 
 }

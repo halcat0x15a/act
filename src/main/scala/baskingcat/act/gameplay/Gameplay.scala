@@ -19,14 +19,14 @@ case class Gameplay(stage: Stage)(implicit val properties: GameProperties) exten
 
   val bounds = stage.viewport
 
-  def update(obj: GObj): GObj = {
+  def update(obj: GameObject): GameObject = {
     obj
   }
 
   def logic: Scene = if (properties.input.isButtonPressed(5)) {
     Title()
   } else {
-    val objects = ((_: GameplayObjects).map(update)).first.apply(stage.objects.partition(_.bounds.intersects(bounds))).fold(_ <+> _)
+    val objects = ((_: GameObjects).map(update)).first.apply(stage.objects.partition(_.bounds.intersects(bounds))).fold(_ <+> _)
     objects.find(_.isInstanceOf[Player[_, _]]).some[Scene] { player =>
       val location = {
         val x = if (player.bounds.centerX < properties.size.halfWidth)

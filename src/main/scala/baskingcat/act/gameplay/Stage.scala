@@ -7,7 +7,7 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Stage(objects: GameplayObjects, size: Dimension[Float], viewport: Rectangle[Float])(implicit properties: GameProperties) {
+case class Stage(objects: GameObjects, size: Dimension[Float], viewport: Rectangle[Float])(implicit properties: GameProperties) {
 
   val gravity = 1.0f
 
@@ -17,7 +17,7 @@ case class Stage(objects: GameplayObjects, size: Dimension[Float], viewport: Rec
 
   val filteredObjects = objects.filter(_.bounds.intersects(effective))
 
-  val blocks = filteredObjects.filter(_.isInstanceOf[Block[_, _]])
+  val blocks = filteredObjects.filter(_.isInstanceOf[Block])
 
   val player = objects.collect {
     case player: Player[_, _] => player

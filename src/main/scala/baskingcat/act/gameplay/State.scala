@@ -1,31 +1,15 @@
 package baskingcat.act.gameplay
 
-sealed abstract trait State
+sealed trait State
 
-sealed abstract trait Normal extends Standing
+sealed case class Normal() extends Standing
 
-sealed abstract trait Moving extends State
+sealed trait Moving extends State
 
-sealed abstract trait Walking extends Moving with Standing
+sealed case class Walking() extends Moving() with Standing
 
-sealed abstract trait Jumping extends Moving
+sealed case class Jumping() extends Moving()
 
-sealed abstract trait Standing extends State
+sealed trait Standing extends State
 
-object Normal {
-
-  val Class = classOf[Normal]
-
-}
-
-object Walking {
-
-  val Class = classOf[Walking]
-
-}
-
-object Jumping {
-
-  val Class = classOf[Jumping]
-
-}
+sealed case class Damaging() extends State

@@ -5,36 +5,46 @@ import Scalaz._
 
 import baskingcat.act._
 
-abstract class GameplayObject[A <: State, B <: Direction](implicit val mfa: Manifest[A], val mfb: Manifest[B]) extends GameObject
+trait HasState[A <: State] {
 
-trait Live[A <: State, B <: Direction] extends GameplayObject[A, B] {
+  val state: A
+
+}
+
+trait HasDirection[A <: Direction] {
+
+  val direction: A
+
+}
+
+trait Live[A <: State] extends GameObject with HasState[A] {
 
   val life: Int
 
-  def damaged(implicit stage: Stage): GameplayObject[A, B]
+  def damaged(implicit stage: Stage): Live[Damaging]
 
   def dead: Boolean = life <= 0 || bounds.top < 0
 
 }
 
-trait Movable[A <: State, B <: Direction] extends GameplayObject[A, B] {
+trait Movable[A <: State, B <: Direction] extends GameObject with HasState[A] with HasDirection[B] {
 
   val velocity: Vector2D[Float]
 
-  def move(implicit ev: A <:< Moving): GameplayObject[_ <: Moving, B]
+  def move(implicit ev: A <:< Moving): Movable[_ <: Moving, B]
 
-  def apply(implicit stage: Stage): GameplayObject[_ <: Moving, B]
+  def apply(implicit stage: Stage): Movable[_ <: Moving, B]
 
 }
 
 trait Walkable[A <: State, B <: Direction] extends Movable[A, B] {
 
-  def walk(implicit stage: Stage): GameplayObject[_ <: Moving, _ <: Direction]
+  def walk(implicit stage: Stage): Walkable[_ <: Moving, _ <: Direction]
 
 }
 
 trait Jumpable[A <: State, B <: Direction] extends Movable[A, B] {
 
-  def jump(implicit ev: A <:< Standing, stage: Stage): GameplayObject[_ <: Jumping, B]
+  def jump(implicit ev: A <:< Standing, stage: Stage): Jumpable[_ <: Jumping, B]
 
 }
