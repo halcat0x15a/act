@@ -13,8 +13,6 @@ case class Gameplay(stage: Stage)(implicit val properties: GameProperties) exten
 
   def this(name: String)(implicit properties: GameProperties) = this(Stage(name))
 
-  private implicit val s = stage
-
   val objects = stage.objects
 
   val bounds = stage.viewport
@@ -24,7 +22,7 @@ case class Gameplay(stage: Stage)(implicit val properties: GameProperties) exten
     if (center < halfDisplaySize)
       0
     else if (center > stageSize - halfDisplaySize)
-      stageSize - halfDisplaySize
+      stageSize - displaySize
     else
       center - halfDisplaySize
   }
@@ -32,7 +30,7 @@ case class Gameplay(stage: Stage)(implicit val properties: GameProperties) exten
   def logic: Scene = if (properties.input.isButtonPressed(5)) {
     Title()
   } else {
-    val update = (_: GameplayObjects).map(_.update)
+    val update = (_: GameplayObjects).map(_.update(stage))
     val objects = update.first.apply(stage.objects.partition(_.bounds.intersects(bounds))).fold(_ <+> _)
     objects.find(_.isInstanceOf[Player[_, _]]).some[Scene] { player =>
       val location = {

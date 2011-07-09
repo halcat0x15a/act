@@ -6,7 +6,7 @@ case class Block(bounds: Rectangle[Float], velocity: Vector2D[Float]) extends Ga
 
   lazy val name = 'block
 
-  def update = this
+  def update(implicit stage: Stage) = this
 
 }
 
