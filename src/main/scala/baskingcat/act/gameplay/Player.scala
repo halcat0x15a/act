@@ -95,9 +95,7 @@ case class Player[A <: State, B <: Direction](state: A, direction: B, bounds: Re
       case _: Standing => new Damaging with Standing
       case _: Flying => new Damaging with Flying
     }
-    val vx = -velocity.x
-    val vy = -velocity.y
-    copy(state = s, velocity = Vector2D(vx, vy), life = life - 1)
+    copy(state = s, velocity = -velocity, life = life - 1)
   }
 
   def update(implicit stage: Stage) = {
