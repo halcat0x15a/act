@@ -25,11 +25,20 @@ case class Player[A <: State, B <: Direction](state: A, direction: B, bounds: Re
 
   def jump(implicit stage: Stage, ev: A <:< Standing) = copy(state = new Jumping, velocity = velocity.copy(y = -Player.JumpPower))
 
-  def apply(implicit stage: Stage) = {
-    def hcheck(obj: GameObject) = obj.bounds.left < bounds.right && obj.bounds.right > bounds.left
-    val grounds = stage.blocks.filter(block => block.bounds.top <= bounds.bottom && block.bounds.bottom >= bounds.bottom && hcheck(block))
+  def hcheck(obj: GameObject) = obj.bounds.left < bounds.right && obj.bounds.right > bounds.left
+
+  def vcheck(obj: GameObject) = obj.bounds.top < bounds.bottom && obj.bounds.bottom > bounds.top
+
+  def grounds(implicit stage: Stage) = stage.blocks.filter(block => block.bounds.top <= bounds.bottom && block.bounds.bottom >= bounds.bottom && hcheck(block))
+
+  def ceilings(implicit stage: Stage) = stage.blocks.filter(block => block.bounds.bottom >= bounds.top && block.bounds.top <= bounds.top && hcheck(block))
+
+  def rwalls(implicit stage: Stage) = stage.blocks.find(block => block.bounds.left <= bounds.right && block.bounds.right >= bounds.right && vcheck(block))
+
+  def lwalls(implicit stage: Stage) = stage.blocks.find(block => block.bounds.right >= bounds.left && block.bounds.left <= bounds.left && vcheck(block))
+
+  def fix(implicit stage: Stage) = {
     lazy val groundTop = grounds.map(_.bounds.top).min
-    val ceilings = stage.blocks.filter(block => block.bounds.bottom >= bounds.top && block.bounds.top <= bounds.top && hcheck(block))
     lazy val ceilingBottom = ceilings.map(_.bounds.bottom).max
     lazy val vmargin = if (grounds.nonEmpty)
       bounds.bottom - groundTop
@@ -37,10 +46,7 @@ case class Player[A <: State, B <: Direction](state: A, direction: B, bounds: Re
       ceilingBottom - bounds.top
     else
       0
-    def vcheck(obj: GameObject) = obj.bounds.top < bounds.bottom && obj.bounds.bottom > bounds.top
-    val rwalls = stage.blocks.find(block => block.bounds.left <= bounds.right && block.bounds.right >= bounds.right && vcheck(block))
     lazy val rwallLeft = rwalls.map(_.bounds.left).min
-    val lwalls = stage.blocks.find(block => block.bounds.right >= bounds.left && block.bounds.left <= bounds.left && vcheck(block))
     lazy val lwallRight = lwalls.map(_.bounds.right).max
     lazy val hmargin = if (rwalls.nonEmpty)
       bounds.right - rwallLeft
@@ -66,6 +72,10 @@ case class Player[A <: State, B <: Direction](state: A, direction: B, bounds: Re
       a -> bounds.location.y
     else
       a -> b
+    copy(bounds = bounds.copy(location = Point(x, y)))
+  }
+
+  def apply(implicit stage: Stage) = {
     val vx = if (lwalls.nonEmpty || rwalls.nonEmpty)
       0f
     else if (velocity.x > 0)
@@ -85,7 +95,7 @@ case class Player[A <: State, B <: Direction](state: A, direction: B, bounds: Re
         f
       case s: Standing => s
     }
-    copy(state = s, bounds = bounds.copy(location = Point(x, y)), velocity = Vector2D(vx, vy))
+    copy(state = s, velocity = Vector2D(vx, vy))
   }
 
   def detect(obj: GameObject) = !obj.isInstanceOf[Block] && !obj.isInstanceOf[Player[_, _]] && obj.bounds.intersects(bounds)
@@ -118,7 +128,7 @@ case class Player[A <: State, B <: Direction](state: A, direction: B, bounds: Re
         case _ => p
       }
     }
-    moved.apply match {
+    moved.fix.fix.apply match {
       case p: Player[_, _] => stage.filteredObjects.any(p.detect).fold[Player[_, _]](p.damaged, p)
     }
   }
