@@ -13,8 +13,8 @@ case class Player[A <: State, B <: Direction](state: A, direction: B, bounds: Re
 
   def walk[C <: Direction](direction: C)(implicit stage: Stage) = {
     val s = state match {
-      case m: Moving => m
-      case _ => Walking()
+      case _: Standing => new Walking with Standing
+      case _: Flying => new Walking with Flying
     }
     val vx = direction match {
       case Forward() => velocity.x |+| Player.Speed
@@ -23,35 +23,85 @@ case class Player[A <: State, B <: Direction](state: A, direction: B, bounds: Re
     copy(state = s, direction = direction, velocity = velocity.copy(x = vx))
   }
 
-  def jump(implicit stage: Stage, ev: A <:< Standing) = copy(state = Jumping(), velocity = velocity.copy(y = -Player.JumpPower))
+  def jump(implicit stage: Stage, ev: A <:< Standing) = copy(state = new Jumping, velocity = velocity.copy(y = -Player.JumpPower))
 
   def apply(implicit stage: Stage) = {
-    val ground = stage.blocks.find(block => block.bounds.top <= bounds.bottom && block.bounds.bottom > bounds.bottom && block.bounds.left <= bounds.right && block.bounds.right >= bounds.left)
-    val x = bounds.location.x
-    val y = ground match {
-      case Some(block) if (velocity.y > 0) => block.bounds.location.y - bounds.size.height
-      case _ => bounds.location.y
-    }
-    val vx = if (velocity.x > 0)
+    def hcheck(obj: GameObject) = obj.bounds.left < bounds.right && obj.bounds.right > bounds.left
+    val grounds = stage.blocks.filter(block => block.bounds.top <= bounds.bottom && block.bounds.bottom >= bounds.bottom && hcheck(block))
+    lazy val groundTop = grounds.map(_.bounds.top).min
+    val ceilings = stage.blocks.filter(block => block.bounds.bottom >= bounds.top && block.bounds.top <= bounds.top && hcheck(block))
+    lazy val ceilingBottom = ceilings.map(_.bounds.bottom).max
+    lazy val vmargin = if (grounds.nonEmpty)
+      bounds.bottom - groundTop
+    else if (ceilings.nonEmpty)
+      ceilingBottom - bounds.top
+    else
+      0
+    def vcheck(obj: GameObject) = obj.bounds.top < bounds.bottom && obj.bounds.bottom > bounds.top
+    val rwalls = stage.blocks.find(block => block.bounds.left <= bounds.right && block.bounds.right >= bounds.right && vcheck(block))
+    lazy val rwallLeft = rwalls.map(_.bounds.left).min
+    val lwalls = stage.blocks.find(block => block.bounds.right >= bounds.left && block.bounds.left <= bounds.left && vcheck(block))
+    lazy val lwallRight = lwalls.map(_.bounds.right).max
+    lazy val hmargin = if (rwalls.nonEmpty)
+      bounds.right - rwallLeft
+    else if (lwalls.nonEmpty)
+      lwallRight - bounds.left
+    else
+      0
+    val a = if (lwalls.nonEmpty)
+      lwallRight
+    else if (rwalls.nonEmpty)
+      rwallLeft - bounds.size.width
+    else
+      bounds.location.x
+    val b = if (grounds.size > 0)
+      groundTop - bounds.size.height
+    else if (ceilings.size > 0)
+      ceilingBottom
+    else
+      bounds.location.y
+    val (x, y) = if (vmargin < hmargin)
+      bounds.location.x -> b
+    else if (hmargin < vmargin)
+      a -> bounds.location.y
+    else
+      a -> b
+    val vx = if (lwalls.nonEmpty || rwalls.nonEmpty)
+      0f
+    else if (velocity.x > 0)
       velocity.x - stage.friction
     else if (velocity.x < 0)
       velocity.x |+| stage.friction
     else
       velocity.x
-    val vy = ground ? 0f | (velocity.y |+| stage.gravity)
-    val s = (vy === 0f && vx === 0f && ground.isDefined).fold[State](Normal(), state)
+    val vy = (grounds.nonEmpty || (ceilings.nonEmpty && velocity.y < 0)) ? 0f | (velocity.y |+| stage.gravity)
+    val s = state match {
+      case f: Flying => if (grounds.nonEmpty)
+        if (vx === 0)
+          new Normal with Standing
+        else
+          new Walking with Standing
+      else
+        f
+      case s: Standing => s
+    }
     copy(state = s, bounds = bounds.copy(location = Point(x, y)), velocity = Vector2D(vx, vy))
   }
 
   def detect(obj: GameObject) = !obj.isInstanceOf[Block] && !obj.isInstanceOf[Player[_, _]] && obj.bounds.intersects(bounds)
 
   def damaged(implicit stage: Stage) = {
+    val s = state match {
+      case _: Standing => new Damaging with Standing
+      case _: Flying => new Damaging with Flying
+    }
     val vx = -velocity.x
     val vy = -velocity.y
-    copy(state = Damaging(), velocity = Vector2D(vx, vy), life = life - 1)
+    copy(state = s, velocity = Vector2D(vx, vy), life = life - 1)
   }
 
   def update(implicit stage: Stage) = {
+    println(state.isInstanceOf[Standing].fold("Standing", "Flying"))
     val walked = if (properties.input.isControllerRight)
       walk(Forward())
     else if (properties.input.isControllerLeft)
@@ -92,7 +142,7 @@ object Player {
   val Regex = """player.*""".r
 
   def apply(x: Float, y: Float)(implicit properties: GameProperties) = {
-    new Player(Normal(), Forward(), Rectangle(Point(x, y), Dimension(Width, Height)), Vector2D(0f, 0f), Life)
+    new Player(new Normal with Standing, Forward(), Rectangle(Point(x, y), Dimension(Width, Height)), Vector2D(0f, 0f), Life)
   }
 
 }

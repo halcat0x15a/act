@@ -43,9 +43,7 @@ object Stage {
           block = Block(x |+| i * Block.Width, y |+| j * Block.Height)
         } yield block
       }
-    }.collect {
-      case Some(seq) => seq
-    }.flatten
+    }.flatten.flatten
     data.find(_.isInstanceOf[Player[_, _]]).map { player =>
       val y = player.bounds.bottom
       new Stage(Vector(data: _*), Dimension(elem \ "@width", elem \ "@height"), Rectangle(Point(0, y), properties.size))

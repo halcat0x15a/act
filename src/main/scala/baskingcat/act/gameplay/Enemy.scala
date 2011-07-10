@@ -13,13 +13,25 @@ case class Enemy[A <: State, B <: Direction](state: A, direction: B, bounds: Rec
 
   def move(implicit ev: A <:< Moving) = copy(bounds = bounds.copy(location = bounds.location |+| velocity))
 
-  def walk[C <: Direction](direction: C)(implicit stage: Stage) = copy(state = Walking(), direction = direction, velocity = Vector2D(0f, 0f))
+  def walk[C <: Direction](direction: C)(implicit stage: Stage) = {
+    val s = state match {
+      case _: Standing => new Walking with Standing
+      case _: Flying => new Walking with Flying
+    }
+    copy(state = s, direction = direction, velocity = Vector2D(0f, 0f))
+  }
 
   def apply(implicit stage: Stage) = copy(velocity = Vector2D(0f, 0f))
 
   def detect(obj: GameObject) = !obj.isInstanceOf[Block] && !obj.isInstanceOf[Enemy[_, _]] && obj.bounds.intersects(bounds)
 
-  def damaged(implicit stage: Stage) = copy(state = Damaging(), life = stage.objects.any(detect).fold(life - 1, life))
+  def damaged(implicit stage: Stage) = {
+    val s = state match {
+      case _: Standing => new Damaging with Standing
+      case _: Flying => new Damaging with Flying
+    }
+    copy(state = s, life = stage.objects.any(detect).fold(life - 1, life))
+  }
 
 }
 
@@ -34,7 +46,7 @@ object Enemy {
   val Regex = """enemy.*""".r
 
   def apply(x: Float, y: Float) = {
-    new Enemy(Normal(), Backward(), Rectangle(Point(x, y), Dimension(Width, Height)), Vector2D(0, 0), Life)
+    new Enemy(new Normal with Standing, Backward(), Rectangle(Point(x, y), Dimension(Width, Height)), Vector2D(0, 0), Life)
   }
 
 }

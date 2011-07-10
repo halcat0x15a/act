@@ -2,14 +2,16 @@ package baskingcat.act.gameplay
 
 sealed trait State
 
-sealed case class Normal() extends Standing
+trait Moving extends State
 
-sealed trait Moving extends State
+trait Standing extends State
 
-sealed case class Walking() extends Moving() with Standing
+trait Flying extends State
 
-sealed case class Jumping() extends Moving()
+class Normal extends Standing
 
-sealed trait Standing extends State
+class Walking extends Moving
 
-sealed case class Damaging() extends State
+class Jumping extends Moving with Flying
+
+class Damaging extends State
