@@ -10,7 +10,7 @@ trait Live[A <: State] extends HasState[A] { obj: GameObject =>
 
   def damaged(implicit stage: Stage): Live[Damaging]
 
-  def dead: Boolean = life <= 0 || bounds.top < 0
+  def isDead: Boolean = life <= 0 || bounds.top < 0
 
 }
 

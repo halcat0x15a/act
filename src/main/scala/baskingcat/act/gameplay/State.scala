@@ -15,3 +15,5 @@ class Walking extends Moving
 class Jumping extends Moving with Flying
 
 class Damaging extends State
+
+class Shooting extends State

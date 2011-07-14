@@ -5,7 +5,7 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Player[A <: State, B <: Direction](state: A, direction: B, bounds: Rectangle[Float], velocity: Vector2D[Float], life: Int)(implicit properties: GameProperties) extends GameplayObject with HasState[A] with HasDirection[B] with Live[A] with Walkable[A, B] with Jumpable[A, B] {
+case class Player[A <: State, B <: Direction](state: A, direction: B, bounds: Rectangle[Float], velocity: Vector2D[Float], life: Int)(implicit properties: GameProperties) extends GameplayObject with HasState[A] with HasDirection[B] with Live[A] with Walkable[A, B] with Jumpable[A, B] with Shootable[A, B] {
 
   lazy val name = 'miku
 
@@ -108,8 +108,15 @@ case class Player[A <: State, B <: Direction](state: A, direction: B, bounds: Re
     copy(state = s, velocity = -velocity, life = life - 1)
   }
 
+  def shoot = {
+    val s = state match {
+      case _: Standing => new Shooting with Standing
+      case _: Flying => new Shooting with Flying
+    }
+    copy(state = s) -> Bullet(this)
+  }
+
   def update(implicit stage: Stage) = {
-    println(state.isInstanceOf[Standing].fold("Standing", "Flying"))
     val walked = if (properties.input.isControllerRight)
       walk(new Forward)
     else if (properties.input.isControllerLeft)

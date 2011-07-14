@@ -27,7 +27,7 @@ object Bullet {
 
   val Speed: Float = 10
 
-  def apply[A <: State, B <: Direction](owner: GameObject with HasDirection[B]) = {
+  def apply[B <: Direction](owner: GameObject with HasDirection[B]) = {
     val x = owner.direction.isInstanceOf[Forward].fold(owner.bounds.right, owner.bounds.left - Width)
     val y = owner.bounds.top |+| owner.bounds.size.height / 2 - Height / 2
     new Bullet(owner, new Normal with Flying, owner.direction, Rectangle(Point(x, y), Dimension(Width, Height)), Vector2D(Speed, 0))
