@@ -9,7 +9,7 @@ case class Enemy[A <: Status, B <: Direction](status: A, direction: B, bounds: R
 
   lazy val name = 'supu
 
-  def update(implicit stage: Stage) = this
+  def update(implicit stage: Stage) = Vector(this)
 
   def move(implicit ev: A <:< Moving) = copy(bounds = bounds.copy(location = bounds.location |+| velocity))
 

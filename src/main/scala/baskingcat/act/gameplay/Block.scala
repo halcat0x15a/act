@@ -1,12 +1,15 @@
 package baskingcat.act.gameplay
 
+import scalaz._
+import Scalaz._
+
 import baskingcat.act._
 
 case class Block(bounds: Rectangle[Float]) extends GameplayObject {
 
   lazy val name = 'block
 
-  def update(implicit stage: Stage) = this
+  def update(implicit stage: Stage) = Vector(this)
 
 }
 

@@ -9,6 +9,10 @@ case class Player[A <: Status, B <: Direction](status: A, direction: B, bounds: 
 
   lazy val name = 'miku
 
+  private def self(a: Any) = a match {
+    case p: Player[_, _] => p
+  }
+
   def move(implicit ev: A <:< Moving) = copy(bounds = bounds.copy(location = bounds.location |+| velocity))
 
   def walk[C <: Direction](direction: C)(implicit stage: Stage) = {
@@ -123,21 +127,21 @@ case class Player[A <: Status, B <: Direction](status: A, direction: B, bounds: 
       walk(new Backward)
     else
       this
-    val jumped = walked match {
-      case p: Player[_, _] => p.status match {
-        case s: Standing if properties.input.isButtonPressed(0) => p.copy(status = s).jump
-        case _ => p
-      }
+    val jumped = walked.status match {
+      case s: Standing if properties.input.isButtonPressed(0) => walked.copy(status = s).jump
+      case _ => walked
     }
-    val moved = jumped match {
-      case p: Player[_, _] => p.status match {
-        case m: Moving => p.copy(status = m).move
-        case _ => p
-      }
+    val (shooted, bullet) = if (properties.input.isButtonPressed(2))
+      jumped.shoot.mapElements(identity, _.some)
+    else
+      jumped -> none
+    val moved = shooted.status match {
+      case m: Moving => shooted.copy(status = m).move
+      case _ => shooted
     }
-    moved.fix.fix.apply match {
-      case p: Player[_, _] => stage.filteredObjects.any(p.detect).fold[Player[_, _]](p.damaged, p)
-    }
+    val applied = moved.fix.fix.apply
+    val d = stage.filteredObjects.any(applied.detect).fold[Player[_, _]](applied.damaged, applied)
+    bullet.some(obj => Vector[GameplayObject](d, obj)).none(Vector[GameplayObject](d))
   }
 
 }

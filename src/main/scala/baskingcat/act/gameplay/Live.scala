@@ -2,7 +2,7 @@ package baskingcat.act.gameplay
 
 import baskingcat.act._
 
-trait Live[A <: Status] extends HasStatus[A] { obj: GameObject =>
+trait Live[A <: Status] extends HasStatus[A] { obj: GameplayObject =>
 
   val life: Int
 
