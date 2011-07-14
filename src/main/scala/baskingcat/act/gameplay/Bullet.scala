@@ -5,7 +5,7 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Bullet[A <: State, B <: Direction](owner: GameObject with HasDirection[B], state: A, direction: B, bounds: Rectangle[Float], velocity: Vector2D[Float]) extends GameObject with HasState[A] with HasDirection[B] with Movable[A, B] {
+case class Bullet[A <: Status, B <: Direction](owner: GameObject with HasDirection[B], state: A, direction: B, bounds: Rectangle[Float], velocity: Vector2D[Float]) extends GameObject with HasStatus[A] with HasDirection[B] with Movable[A, B] {
 
   lazy val name = 'negi
 

@@ -5,7 +5,7 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Enemy[A <: State, B <: Direction](state: A, direction: B, bounds: Rectangle[Float], velocity: Vector2D[Float], life: Int) extends GameplayObject with HasState[A] with HasDirection[B] with Live[A] with Movable[A, B] with Walkable[A, B] {
+case class Enemy[A <: Status, B <: Direction](state: A, direction: B, bounds: Rectangle[Float], velocity: Vector2D[Float], life: Int) extends GameplayObject with HasStatus[A] with HasDirection[B] with Live[A] with Movable[A, B] with Walkable[A, B] {
 
   lazy val name = 'supu
 

@@ -5,7 +5,7 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Player[A <: State, B <: Direction](state: A, direction: B, bounds: Rectangle[Float], velocity: Vector2D[Float], life: Int)(implicit properties: GameProperties) extends GameplayObject with HasState[A] with HasDirection[B] with Live[A] with Walkable[A, B] with Jumpable[A, B] with Shootable[A, B] {
+case class Player[A <: Status, B <: Direction](state: A, direction: B, bounds: Rectangle[Float], velocity: Vector2D[Float], life: Int)(implicit properties: GameProperties) extends GameplayObject with HasStatus[A] with HasDirection[B] with Live[A] with Walkable[A, B] with Jumpable[A, B] with Shootable[A, B] {
 
   lazy val name = 'miku
 
