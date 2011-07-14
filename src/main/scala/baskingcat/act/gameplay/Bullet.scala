@@ -5,12 +5,12 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Bullet[A <: Status, B <: Direction](owner: GameObject with HasDirection[B], state: A, direction: B, bounds: Rectangle[Float], velocity: Vector2D[Float]) extends GameObject with HasStatus[A] with HasDirection[B] with Movable[A, B] {
+case class Bullet[A <: Status, B <: Direction](owner: GameObject with HasDirection[B], status: A, direction: B, bounds: Rectangle[Float], velocity: Vector2D[Float]) extends GameObject with HasStatus[A] with HasDirection[B] with Movable[A, B] {
 
   lazy val name = 'negi
 
-  def update(implicit stage: Stage) = state match {
-    case m: Moving => copy(state = m).move.apply
+  def update(implicit stage: Stage) = status match {
+    case m: Moving => copy(status = m).move.apply
   }
 
   def move(implicit ev: A <:< Moving) = copy(bounds = bounds.copy(location = bounds.location |+| velocity))
