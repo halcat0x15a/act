@@ -46,7 +46,7 @@ object Enemy {
   val Regex = """enemy.*""".r
 
   def apply(x: Float, y: Float) = {
-    new Enemy(new Normal with Standing, Backward(), Rectangle(Point(x, y), Dimension(Width, Height)), Vector2D(0, 0), Life)
+    new Enemy(new Normal with Standing, new Backward, Rectangle(Point(x, y), Dimension(Width, Height)), Vector2D(0, 0), Life)
   }
 
 }

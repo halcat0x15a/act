@@ -17,8 +17,8 @@ case class Player[A <: State, B <: Direction](state: A, direction: B, bounds: Re
       case _: Flying => new Walking with Flying
     }
     val vx = direction match {
-      case Forward() => velocity.x |+| Player.Speed
-      case Backward() => velocity.x - Player.Speed
+      case _: Forward => velocity.x |+| Player.Speed
+      case _: Backward => velocity.x - Player.Speed
     }
     copy(state = s, direction = direction, velocity = velocity.copy(x = vx))
   }
@@ -111,9 +111,9 @@ case class Player[A <: State, B <: Direction](state: A, direction: B, bounds: Re
   def update(implicit stage: Stage) = {
     println(state.isInstanceOf[Standing].fold("Standing", "Flying"))
     val walked = if (properties.input.isControllerRight)
-      walk(Forward())
+      walk(new Forward)
     else if (properties.input.isControllerLeft)
-      walk(Backward())
+      walk(new Backward)
     else
       this
     val jumped = walked match {
@@ -150,7 +150,7 @@ object Player {
   val Regex = """player.*""".r
 
   def apply(x: Float, y: Float)(implicit properties: GameProperties) = {
-    new Player(new Normal with Standing, Forward(), Rectangle(Point(x, y), Dimension(Width, Height)), mzero[Vector2D[Float]], Life)
+    new Player(new Normal with Standing, new Forward, Rectangle(Point(x, y), Dimension(Width, Height)), mzero[Vector2D[Float]], Life)
   }
 
 }
