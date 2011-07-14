@@ -11,9 +11,11 @@ package object act {
 
   def stream(name: String) = getClass.getClassLoader.getResourceAsStream(name)
 
-  implicit def VectorSemigroup[A](implicit num: Fractional[A]) = {
+  implicit def Vector2DSemigroup[A](implicit num: Fractional[A]) = {
     import num._
     semigroup[Vector2D[A]]((a, b) => a + b)
   }
+
+  implicit def Vector2DZero[A](implicit num: Fractional[A]) = zero(Vector2D.Zero[A])
 
 }

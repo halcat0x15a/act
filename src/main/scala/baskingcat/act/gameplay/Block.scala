@@ -2,7 +2,7 @@ package baskingcat.act.gameplay
 
 import baskingcat.act._
 
-case class Block(bounds: Rectangle[Float], velocity: Vector2D[Float]) extends GameplayObject {
+case class Block(bounds: Rectangle[Float]) extends GameplayObject {
 
   lazy val name = 'block
 
@@ -17,7 +17,7 @@ object Block {
   val Height = 32f
 
   def apply(x: Float, y: Float) = {
-    new Block(Rectangle(Point(x, y), Dimension(Width, Height)), Vector2D(0, 0))
+    new Block(Rectangle(Point(x, y), Dimension(Width, Height)))
   }
 
 }

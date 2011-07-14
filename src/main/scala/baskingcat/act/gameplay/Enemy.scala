@@ -18,10 +18,10 @@ case class Enemy[A <: State, B <: Direction](state: A, direction: B, bounds: Rec
       case _: Standing => new Walking with Standing
       case _: Flying => new Walking with Flying
     }
-    copy(state = s, direction = direction, velocity = Vector2D(0f, 0f))
+    copy(state = s, direction = direction, velocity = mzero[Vector2D[Float]])
   }
 
-  def apply(implicit stage: Stage) = copy(velocity = Vector2D(0f, 0f))
+  def apply(implicit stage: Stage) = copy(velocity = mzero[Vector2D[Float]])
 
   def detect(obj: GameObject) = !obj.isInstanceOf[Block] && !obj.isInstanceOf[Enemy[_, _]] && obj.bounds.intersects(bounds)
 

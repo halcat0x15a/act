@@ -150,7 +150,7 @@ object Player {
   val Regex = """player.*""".r
 
   def apply(x: Float, y: Float)(implicit properties: GameProperties) = {
-    new Player(new Normal with Standing, Forward(), Rectangle(Point(x, y), Dimension(Width, Height)), Vector2D(0f, 0f), Life)
+    new Player(new Normal with Standing, Forward(), Rectangle(Point(x, y), Dimension(Width, Height)), mzero[Vector2D[Float]], Life)
   }
 
 }
