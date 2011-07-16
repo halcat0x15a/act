@@ -1,7 +1,3 @@
 package baskingcat.act.gameplay
 
-trait HasDirection[A <: Direction] { obj: GameplayObject =>
-
-  val direction: A
-
-}
+trait HasDirection[A <: Direction]

@@ -5,29 +5,18 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Player[A <: Status, B <: Direction](status: A, direction: B, bounds: Rectangle[Float], velocity: Vector2D[Float], life: Int)(implicit properties: GameProperties) extends GameplayObject with HasStatus[A] with HasDirection[B] with Live[A] with Walkable[A, B] with Jumpable[A, B] with Shootable[A, B] {
+case class Player[A <: Status, B <: Direction](name: Symbol, bounds: Rectangle[Float], velocity: Vector2D[Float], life: Int)(implicit properties: GameProperties, val status: Manifest[A], val direction: Manifest[B]) extends GameplayObject with HasStatus[A] with HasDirection[B] with Live[A] with Walkable[A, B] with Jumpable[A, B] with Shootable[A, B] {
 
-  lazy val name = 'miku
+  type P = Player[_ <: Status, _ <: Direction]
 
-  private def self(a: Any) = a match {
-    case p: Player[_, _] => p
+  def move: Player[A, B] = copy(bounds = bounds.copy(location = bounds.location |+| velocity))
+
+  def walk[C <: Direction: Manifest]: Player[_ <: Walking, C] = {
+    val vx = (manifest[C] <:< manifest[Forward]).fold(velocity.x |+| Player.Speed, velocity.x - Player.Speed)
+    copy[A with Walking, C](velocity = velocity.copy(x = vx))
   }
 
-  def move(implicit ev: A <:< Moving) = copy(bounds = bounds.copy(location = bounds.location |+| velocity))
-
-  def walk[C <: Direction](direction: C)(implicit stage: Stage) = {
-    val s = status match {
-      case _: Standing => new Walking with Standing
-      case _: Flying => new Walking with Flying
-    }
-    val vx = direction match {
-      case _: Forward => velocity.x |+| Player.Speed
-      case _: Backward => velocity.x - Player.Speed
-    }
-    copy(status = s, direction = direction, velocity = velocity.copy(x = vx))
-  }
-
-  def jump(implicit stage: Stage, ev: A <:< Standing) = copy(status = new Jumping, velocity = velocity.copy(y = -Player.JumpPower))
+  def jump: Player[_ <: Jumping, B] = copy[Jumping with A, B](velocity = velocity.copy(y = -Player.JumpPower))
 
   def hcheck(obj: GameObject) = obj.bounds.left < bounds.right && obj.bounds.right > bounds.left
 
@@ -79,7 +68,7 @@ case class Player[A <: Status, B <: Direction](status: A, direction: B, bounds: 
     copy(bounds = bounds.copy(location = Point(x, y)))
   }
 
-  def apply(implicit stage: Stage) = {
+  def apply(implicit stage: Stage): Player[_ <: Status, B] = {
     val vx = if (lwalls.nonEmpty || rwalls.nonEmpty)
       0f
     else if (velocity.x > 0)
@@ -89,58 +78,39 @@ case class Player[A <: Status, B <: Direction](status: A, direction: B, bounds: 
     else
       velocity.x
     val vy = (grounds.nonEmpty || (ceilings.nonEmpty && velocity.y < 0)) ? 0f | (velocity.y |+| stage.gravity)
-    val s = status match {
-      case f: Flying => if (grounds.nonEmpty)
-        if (vx === 0)
-          new Normal with Standing
-        else
-          new Walking with Standing
+    def copy[C <: Status: Manifest] = this.copy[C, B](velocity = Vector2D(vx, vy))
+    if (grounds.nonEmpty)
+      if (vx === 0)
+        copy[Standing with Normal]
       else
-        f
-      case s: Standing => s
-    }
-    copy(status = s, velocity = Vector2D(vx, vy))
+        copy[Standing with Walking]
+    else if (status <:< manifest[Jumping])
+      copy[Jumping]
+    else if (vx === 0)
+      copy[Normal with Flying]
+    else
+      copy[Walking with Flying]
   }
 
   def detect(obj: GameObject) = !obj.isInstanceOf[Block] && !obj.isInstanceOf[Player[_, _]] && obj.bounds.intersects(bounds)
 
-  def damaged(implicit stage: Stage) = {
-    val s = status match {
-      case _: Standing => new Damaging with Standing
-      case _: Flying => new Damaging with Flying
-    }
-    copy(status = s, velocity = -velocity, life = life - 1)
-  }
+  def damaged: Player[_ <: Damaging, B] = copy[A with Damaging, B](velocity = -velocity, life = life - 1)
 
-  def shoot = {
-    val s = status match {
-      case _: Standing => new Shooting with Standing
-      case _: Flying => new Shooting with Flying
-    }
-    copy(status = s) -> Bullet(this)
-  }
+  def shoot = copy[A with Shooting, B]() -> Bullet(this)
 
   def update(implicit stage: Stage) = {
+    println(status)
     val walked = if (properties.input.isControllerRight)
-      walk(new Forward)
+      walk[Forward]
     else if (properties.input.isControllerLeft)
-      walk(new Backward)
+      walk[Backward]
     else
       this
-    val jumped = walked.status match {
-      case s: Standing if properties.input.isButtonPressed(0) => walked.copy(status = s).jump
-      case _ => walked
-    }
-    val (shooted, bullet) = if (properties.input.isButtonPressed(2))
-      jumped.shoot.mapElements(identity, _.some)
-    else
-      jumped -> none
-    val moved = shooted.status match {
-      case m: Moving => shooted.copy(status = m).move
-      case _ => shooted
-    }
+    val jumped = (walked.status <:< manifest[Standing] && properties.input.isButtonPressed(0)).fold[P](walked.jump, walked)
+    val (shooted, bullet) = properties.input.isButtonPressed(2).fold[(P, Option[Bullet[_, _]])](jumped.shoot.mapElements(identity, _.some), jumped -> none)
+    val moved = (shooted.status <:< manifest[Moving]).fold[P](shooted.move, shooted)
     val applied = moved.fix.fix.apply
-    val d = stage.filteredObjects.any(applied.detect).fold[Player[_, _]](applied.damaged, applied)
+    val d = stage.filteredObjects.any(applied.detect).fold[P](applied.damaged, applied)
     bullet.some(obj => Vector[GameplayObject](d, obj)).none(Vector[GameplayObject](d))
   }
 
@@ -161,7 +131,7 @@ object Player {
   val Regex = """player.*""".r
 
   def apply(x: Float, y: Float)(implicit properties: GameProperties) = {
-    new Player(new Normal with Standing, new Forward, Rectangle(Point(x, y), Dimension(Width, Height)), mzero[Vector2D[Float]], Life)
+    new Player[Standing with Normal, Forward]('miku, Rectangle(Point(x, y), Dimension(Width, Height)), mzero[Vector2D[Float]], Life)
   }
 
 }

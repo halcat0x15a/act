@@ -1,7 +1,7 @@
 package baskingcat.act.gameplay
 
-sealed abstract class Direction
+sealed trait Direction
 
-class Forward extends Direction
+trait Forward extends Direction
 
-class Backward extends Direction
+trait Backward extends Direction

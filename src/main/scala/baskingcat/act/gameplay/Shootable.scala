@@ -4,6 +4,6 @@ import baskingcat.act._
 
 trait Shootable[A <: Status, B <: Direction] extends HasStatus[A] with HasDirection[B] { obj: GameplayObject =>
 
-  def shoot: (Shootable[Shooting, B], Bullet[_ <: Status, B])
+  def shoot: (Shootable[_ <: Shooting, B], Bullet[_ <: Status, B])
 
 }

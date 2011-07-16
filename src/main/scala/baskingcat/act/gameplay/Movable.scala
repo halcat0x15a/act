@@ -6,7 +6,7 @@ trait Movable[A <: Status, B <: Direction] extends HasStatus[A] with HasDirectio
 
   val velocity: Vector2D[Float]
 
-  def move(implicit ev: A <:< Moving): Movable[A, B]
+  def move: Movable[A, B]
 
   def apply(implicit stage: Stage): Movable[_ <: Status, B]
 

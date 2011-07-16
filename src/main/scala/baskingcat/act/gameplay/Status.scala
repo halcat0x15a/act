@@ -8,12 +8,12 @@ trait Standing extends Status
 
 trait Flying extends Status
 
-class Normal extends Standing
+trait Normal extends Standing
 
-class Walking extends Moving
+trait Walking extends Moving
 
-class Jumping extends Moving with Flying
+trait Jumping extends Moving with Flying
 
-class Damaging extends Status
+trait Damaging extends Status
 
-class Shooting extends Status
+trait Shooting extends Status
