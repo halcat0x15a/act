@@ -2,8 +2,8 @@ package baskingcat.act.gameplay
 
 import baskingcat.act._
 
-trait Walkable[A <: Status, B <: Direction] extends Movable[A, B] { obj: GameplayObject =>
+trait Walkable[A <: Status, B <: Form, C <: Direction] extends Movable[A, B] {
 
-  def walk[C <: Direction: Manifest]: Walkable[_ <: Walking, C]
+  def walk[D <: Direction: Manifest]: Walkable[_ <: Status, B, D]
 
 }

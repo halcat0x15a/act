@@ -5,7 +5,7 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Bullet[A <: Status: Manifest, B <: Direction: Manifest](owner: GameObject with HasDirection[B], bounds: Rectangle[Float], velocity: Vector2D[Float]) extends GameplayObject with HasStatus[A] with HasDirection[B] with Movable[A, B] {
+case class Bullet[A <: Status, B <: Form, C <: Direction](owner: GameObject with HasDirection[C], bounds: Rectangle[Float], velocity: Vector2D[Float])(implicit status: Manifest[A], form: Manifest[B], direction: Manifest[C]) extends GameplayObject with HasStatus[A] with HasForm[B] with HasDirection[C] with Movable[A, B] {
 
   lazy val name = 'negi
 
@@ -25,10 +25,10 @@ object Bullet {
 
   val Velocity: Vector2D[Float] = Vector2D(10, 0)
 
-  def apply[B <: Direction: Manifest](owner: GameObject with HasDirection[B]) = {
-    val x = (manifest[B] <:< manifest[Forward]).fold(owner.bounds.right, owner.bounds.left - Width)
+  def apply[A <: Direction: Manifest](owner: GameObject with HasDirection[A]) = {
+    val x = (manifest[A] <:< manifest[Forward]).fold(owner.bounds.right, owner.bounds.left - Width)
     val y = owner.bounds.top |+| owner.bounds.size.height / 2 - Height / 2
-    new Bullet[Walking with Flying, B](owner, Rectangle(Point(x, y), Dimension(Width, Height)), Velocity)
+    new Bullet[Walking, Flying, A](owner, Rectangle(Point(x, y), Dimension(Width, Height)), Velocity)
   }
 
 }

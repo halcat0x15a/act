@@ -35,7 +35,7 @@ case class Gameplay(stage: Stage)(implicit val properties: GameProperties) exten
       case _ => true
     }
     val objects = update.first.apply(stage.objects.partition(_.bounds.intersects(bounds))).fold(_ <+> _)
-    objects.find(_.isInstanceOf[Player[_, _]]).some[Scene] { player =>
+    objects.find(_.isInstanceOf[Player[_, _, _]]).some[Scene] { player =>
       val location = {
         val x = coord(properties.size.width, stage.size.width, player.bounds.centerX)
         val y = coord(properties.size.height, stage.size.height, player.bounds.centerY)

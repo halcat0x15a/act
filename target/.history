@@ -405,3 +405,6 @@ compile
 exit
 compile
 clean
+compile
+clean
+compile
