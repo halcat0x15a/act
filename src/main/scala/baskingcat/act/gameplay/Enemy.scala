@@ -9,31 +9,35 @@ case class Enemy[A <: Status, B <: Form, C <: Direction](bounds: Rectangle[Float
 
   type E = Enemy[_ <: Status, _ <: Form, _ <: Direction]
 
+  val speed: Float = 1f
+
   lazy val name = 'supu
 
-  def update(implicit stage: Stage) = Vector(stage.objects.any(detect).fold[E](damaged, this))
+  def update(implicit stage: Stage) = {
+    Vector(stage.objects.any(detect).fold[E](damaged, this))
+  }
 
   def move = copy(bounds = bounds.copy(location = bounds.location |+| velocity))
 
-  def walk[D <: Direction: Manifest]: Enemy[_ <: Walking, B, D] = copy[Walking with A, B, D](velocity = mzero[Vector2D[Float]])
+  def walk[D <: Direction: Manifest]: Enemy[_ <: Walking, B, D] = copy[Walking, B, D](velocity = mzero[Vector2D[Float]])
 
   def apply(implicit stage: Stage): Enemy[A, B, C] = copy(velocity = mzero[Vector2D[Float]])
 
   def detect(obj: GameplayObject) = !obj.isInstanceOf[Block] && !obj.isInstanceOf[Enemy[_, _, _]] && obj.bounds.intersects(bounds)
 
-  def damaged = {
-    copy[Damaging with A, B, C](life = life - 1)
-  }
+  def damaged = copy[Damaging, B, C](life = life - 1)
 
 }
 
 object Enemy {
 
+  type Type = Enemy[_ <: Status, _ <: Form, _ <: Direction]
+
   val Width: Float = 64
 
   val Height: Float = 64
 
-  val Life: Int = 5
+  val Life: Int = 1
 
   val Regex = """enemy.*""".r
 

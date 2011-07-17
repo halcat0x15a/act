@@ -1,5 +1,7 @@
 package baskingcat.act.gameplay
 
+import PartialFunction._
+
 import scalaz._
 import Scalaz._
 
@@ -7,12 +9,13 @@ import baskingcat.act._
 
 case class Player[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: Rectangle[Float], velocity: Vector2D[Float], life: Int)(implicit properties: GameProperties, val status: Manifest[A], val form: Manifest[B], val direction: Manifest[C]) extends GameplayObject with Live[A] with Walkable[A, B, C] with Jumpable[A, B] with Shootable[A, C] {
 
-  type P = Player[_ <: Status, _ <: Form, _ <: Direction]
+  val speed: Float = 7f
 
   def move: Player[A, B, C] = copy(bounds = bounds.copy(location = bounds.location |+| velocity))
 
   def walk[D <: Direction: Manifest]: Player[_ <: Walking, B, D] = {
-    val vx = (manifest[C] <:< manifest[Forward]).fold(velocity.x |+| Player.Speed, velocity.x - Player.Speed)
+    def v(signum: Int) = (velocity.x |+| Player.Acceleration * signum) |> (vx => (vx.abs > speed).fold(speed * signum, vx))
+    val vx = (manifest[C] <:< manifest[Forward]).fold(v(1), v(-1))
     copy[Walking, B, D](velocity = velocity.copy(x = vx))
   }
 
@@ -80,11 +83,14 @@ case class Player[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: 
       cp[Walking, Flying]
   }
 
-  def detect(obj: GameplayObject) = !obj.isInstanceOf[Block] && !obj.isInstanceOf[Player[_, _, _]] && obj.bounds.intersects(bounds)
+  def detect(obj: GameplayObject) = obj.bounds.intersects(bounds) && cond(obj) {
+    case _: Enemy.Type => true
+    case b: Bullet.Type if !b.owner.isInstanceOf[Player.Type] => true
+  }
 
   def damaged: Player[_ <: Damaging, B, C] = copy[Damaging, B, C](velocity = -velocity, life = life - 1)
 
-  def shoot = copy[A with Shooting, B, C]() -> Bullet(this)
+  def shoot = copy[Shooting, B, C]() -> Bullet(this)
 
   def update(implicit stage: Stage) = {
     println(status)
@@ -94,11 +100,10 @@ case class Player[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: 
       walk[Backward]
     else
       this
-    val jumped = (walked.form <:< manifest[Standing] && properties.input.isButtonPressed(0)).fold[P](walked.jump, walked)
-    val (shooted, bullet) = properties.input.isButtonPressed(2).fold[(P, Option[Bullet[_, _, _]])](jumped.shoot.mapElements(identity, _.some), jumped -> none)
-    val moved = (shooted.status <:< manifest[Moving]).fold[P](shooted.move, shooted)
-    val applied = moved.fix.fix.apply
-    val d = stage.filteredObjects.any(applied.detect).fold[P](applied.damaged, applied)
+    val jumped = (walked.form <:< manifest[Standing] && properties.input.isButtonPressed(0)).fold[Player.Type](walked.jump, walked)
+    val (shooted, bullet) = properties.input.isButtonPressed(2).fold[(Player.Type, Option[Bullet[_, _, _]])](jumped.shoot.mapElements(identity, _.some), jumped -> none)
+    val applied = shooted.move.fix.fix.apply
+    val d = applied.live
     bullet.some(obj => Vector[GameplayObject](d, obj)).none(Vector[GameplayObject](d))
   }
 
@@ -106,15 +111,17 @@ case class Player[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: 
 
 object Player {
 
+  type Type = Player[_ <: Status, _ <: Form, _ <: Direction]
+
   val Width = 64f
 
   val Height = 64f
 
   val Life = 1
 
-  val Speed = 1f
+  val Acceleration: Float = 1f
 
-  val JumpPower = 15f
+  val JumpPower = 20f
 
   val Regex = """player.*""".r
 

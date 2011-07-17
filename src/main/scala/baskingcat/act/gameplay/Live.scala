@@ -1,8 +1,11 @@
 package baskingcat.act.gameplay
 
+import scalaz._
+import Scalaz._
+
 import baskingcat.act._
 
-trait Live[A <: Status] extends HasStatus[A] {
+trait Live[A <: Status] extends GameplayObject with HasStatus[A] {
 
   val life: Int
 
@@ -10,7 +13,9 @@ trait Live[A <: Status] extends HasStatus[A] {
 
   def damaged: Live[_ <: Damaging]
 
-  def isDead: Boolean = life <= 0// || bounds.top < 0
+  def live(implicit stage: Stage) = stage.filteredObjects.any(detect).fold[GameplayObject](damaged, this)
+
+  def isDead: Boolean = life <= 0
 
 }
 

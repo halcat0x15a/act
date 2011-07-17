@@ -9,7 +9,7 @@ import baskingcat.act._
 
 case class Stage(objects: GameplayObjects, size: Dimension[Float], viewport: Rectangle[Float])(implicit properties: GameProperties) {
 
-  val gravity = 1.0f
+  val gravity = 1.5f
 
   val friction = 0.5f
 
@@ -20,7 +20,7 @@ case class Stage(objects: GameplayObjects, size: Dimension[Float], viewport: Rec
   val blocks = filteredObjects.filter(_.isInstanceOf[Block])
 
   val player = objects.collect {
-    case player: Player[_, _, _] => player
+    case player: Player.Type => player
   }.headOption.err("Player not found")
 
 }
@@ -44,7 +44,7 @@ object Stage {
         } yield block
       }
     }.flatten.flatten
-    data.find(_.isInstanceOf[Player[_, _, _]]).map { player =>
+    data.find(_.isInstanceOf[Player.Type]).map { player =>
       val y = player.bounds.bottom
       new Stage(Vector(data: _*), Dimension(elem \ "@width", elem \ "@height"), Rectangle(Point(0, y), properties.size))
     }.err("Player Not Found.")
