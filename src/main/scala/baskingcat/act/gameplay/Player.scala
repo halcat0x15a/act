@@ -21,7 +21,7 @@ case class Player[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: 
 
   def jump: Player[_ <: Jumping, _ <: Form, C] = copy[Jumping, Flying, C](velocity = velocity.copy(y = -Player.JumpPower))
 
-  def fix(implicit stage: Stage) = {
+  def fix(implicit stage: Stage): Player[A, B, C] = {
     lazy val groundTop = grounds.map(_.bounds.top).min
     lazy val ceilingBottom = ceilings.map(_.bounds.bottom).max
     lazy val vmargin = if (grounds.nonEmpty)
@@ -38,25 +38,28 @@ case class Player[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: 
       lwallRight - bounds.left
     else
       0
-    val a = if (lwalls.nonEmpty)
-      lwallRight
-    else if (rwalls.nonEmpty)
+    lazy val x = if (rwalls.nonEmpty)
       rwallLeft - bounds.size.width
+    else if (lwalls.nonEmpty)
+      lwallRight
     else
       bounds.location.x
-    val b = if (grounds.size > 0)
+    lazy val y = if (grounds.size > 0)
       groundTop - bounds.size.height
     else if (ceilings.size > 0)
       ceilingBottom
     else
       bounds.location.y
-    val (x, y) = if (vmargin < hmargin)
-      bounds.location.x -> b
+    lazy val location = if (vmargin < hmargin)
+      Point(bounds.location.x, y)
     else if (hmargin < vmargin)
-      a -> bounds.location.y
+      Point(x, bounds.location.y)
     else
-      a -> b
-    copy(bounds = bounds.copy(location = Point(x, y)))
+      Point(x, y)
+    if ((hmargin /== 0) && (vmargin /== 0))
+      copy(bounds = bounds.copy(location = location)).fix
+    else
+      this
   }
 
   def apply(implicit stage: Stage): Player[_ <: Status, _ <: Form, C] = {
@@ -93,16 +96,15 @@ case class Player[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: 
   def shoot = copy[Shooting, B, C]() -> Bullet(this)
 
   def update(implicit stage: Stage) = {
-    println(bounds.location)
-    val walked = if (properties.input.isControllerRight)
+    val walked = if (properties.input.isControllerRight && rwalls.isEmpty)
       walk[Forward]
-    else if (properties.input.isControllerLeft)
+    else if (properties.input.isControllerLeft && lwalls.isEmpty)
       walk[Backward]
     else
       this
     val jumped = (walked.form <:< manifest[Standing] && properties.input.isButtonPressed(0)).fold[Player.Type](walked.jump, walked)
     val (shooted, bullet) = properties.input.isButtonPressed(1).fold[(Player.Type, Option[Bullet.Type])](jumped.shoot.mapElements(identity, _.some), jumped -> none)
-    val applied = shooted.move.fix.fix.apply
+    val applied = shooted.move.fix.apply
     val d = applied.live
     bullet.some(obj => Vector[GameplayObject](d, obj)).none(Vector[GameplayObject](d))
   }
