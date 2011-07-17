@@ -13,9 +13,13 @@ case class Stage(objects: GameplayObjects, size: Dimension[Float], viewport: Rec
 
   val friction = 0.5f
 
+  val bounds = Rectangle(size)
+
   val effective = Rectangle(viewport.location - Vector2D(properties.size.width, properties.size.height), Dimension(properties.size.width * 3, properties.size.height * 3))
 
-  val filteredObjects = objects.filter(_.bounds.intersects(effective))
+  val partitionedObjects = objects.partition(_.bounds.intersects(effective))
+
+  val filteredObjects = partitionedObjects._1
 
   val blocks = filteredObjects.filter(_.isInstanceOf[Block])
 

@@ -15,7 +15,7 @@ trait Live[A <: Status] extends GameplayObject with HasStatus[A] {
 
   def live(implicit stage: Stage) = stage.filteredObjects.any(detect).fold[GameplayObject](damaged, this)
 
-  def isDead: Boolean = life <= 0
+  def isDead(implicit stage: Stage): Boolean = life <= 0 || !stage.bounds.intersects(bounds)
 
 }
 

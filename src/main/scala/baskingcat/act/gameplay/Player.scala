@@ -93,7 +93,7 @@ case class Player[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: 
   def shoot = copy[Shooting, B, C]() -> Bullet(this)
 
   def update(implicit stage: Stage) = {
-    println(status)
+    println(bounds.location)
     val walked = if (properties.input.isControllerRight)
       walk[Forward]
     else if (properties.input.isControllerLeft)
@@ -101,7 +101,7 @@ case class Player[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: 
     else
       this
     val jumped = (walked.form <:< manifest[Standing] && properties.input.isButtonPressed(0)).fold[Player.Type](walked.jump, walked)
-    val (shooted, bullet) = properties.input.isButtonPressed(2).fold[(Player.Type, Option[Bullet[_, _, _]])](jumped.shoot.mapElements(identity, _.some), jumped -> none)
+    val (shooted, bullet) = properties.input.isButtonPressed(1).fold[(Player.Type, Option[Bullet.Type])](jumped.shoot.mapElements(identity, _.some), jumped -> none)
     val applied = shooted.move.fix.fix.apply
     val d = applied.live
     bullet.some(obj => Vector[GameplayObject](d, obj)).none(Vector[GameplayObject](d))

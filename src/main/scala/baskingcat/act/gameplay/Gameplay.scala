@@ -30,12 +30,12 @@ case class Gameplay(stage: Stage)(implicit val properties: GameProperties) exten
   def logic: Scene = if (properties.input.isButtonPressed(5)) {
     Title()
   } else {
-    val update = (_: GameplayObjects).flatMap(_.update(stage)).filter {
-      case l: Live[_] => !l.isDead
+    val update = (_: GameplayObjects).withFilter {
+      case l: Live[_] => !l.isDead(stage)
       case _ => true
-    }
-    val objects = update.first.apply(stage.objects.partition(_.bounds.intersects(bounds))).fold(_ <+> _)
-    objects.find(_.isInstanceOf[Player[_, _, _]]).some[Scene] { player =>
+    }.flatMap(_.update(stage))
+    val objects = update.first.apply(stage.partitionedObjects).fold(_ <+> _)
+    objects.find(_.isInstanceOf[Player.Type]).some[Scene] { player =>
       val location = {
         val x = coord(properties.size.width, stage.size.width, player.bounds.centerX)
         val y = coord(properties.size.height, stage.size.height, player.bounds.centerY)
