@@ -5,7 +5,7 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Player[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: Rectangle[Float], velocity: Vector2D[Float], life: Int)(implicit properties: GameProperties, val action: Manifest[A], val status: Manifest[B], val direction: Manifest[C]) extends GameplayObject with Live[A] with Walkable[A, B, C] with Jumpable[A, B] with Shootable[A, C] {
+case class Player[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: Rectangle[Float], velocity: Vector2D[Float], life: Int)(implicit properties: GameProperties, val status: Manifest[A], val form: Manifest[B], val direction: Manifest[C]) extends GameplayObject with Live[A] with Walkable[A, B, C] with Jumpable[A, B] with Shootable[A, C] {
 
   type P = Player[_ <: Status, _ <: Form, _ <: Direction]
 
@@ -13,22 +13,10 @@ case class Player[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: 
 
   def walk[D <: Direction: Manifest]: Player[_ <: Walking, B, D] = {
     val vx = (manifest[C] <:< manifest[Forward]).fold(velocity.x |+| Player.Speed, velocity.x - Player.Speed)
-    copy[A with Walking, B, D](velocity = velocity.copy(x = vx))
+    copy[Walking, B, D](velocity = velocity.copy(x = vx))
   }
 
-  def jump: Player[_ <: Jumping, _ <: Form, C] = copy[Jumping with A, Flying, C](velocity = velocity.copy(y = -Player.JumpPower))
-
-  def hcheck(obj: GameObject) = obj.bounds.left < bounds.right && obj.bounds.right > bounds.left
-
-  def vcheck(obj: GameObject) = obj.bounds.top < bounds.bottom && obj.bounds.bottom > bounds.top
-
-  def grounds(implicit stage: Stage) = stage.blocks.filter(block => block.bounds.top <= bounds.bottom && block.bounds.bottom >= bounds.bottom && hcheck(block))
-
-  def ceilings(implicit stage: Stage) = stage.blocks.filter(block => block.bounds.bottom >= bounds.top && block.bounds.top <= bounds.top && hcheck(block))
-
-  def rwalls(implicit stage: Stage) = stage.blocks.find(block => block.bounds.left <= bounds.right && block.bounds.right >= bounds.right && vcheck(block))
-
-  def lwalls(implicit stage: Stage) = stage.blocks.find(block => block.bounds.right >= bounds.left && block.bounds.left <= bounds.left && vcheck(block))
+  def jump: Player[_ <: Jumping, _ <: Form, C] = copy[Jumping, Flying, C](velocity = velocity.copy(y = -Player.JumpPower))
 
   def fix(implicit stage: Stage) = {
     lazy val groundTop = grounds.map(_.bounds.top).min
@@ -94,7 +82,7 @@ case class Player[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: 
 
   def detect(obj: GameplayObject) = !obj.isInstanceOf[Block] && !obj.isInstanceOf[Player[_, _, _]] && obj.bounds.intersects(bounds)
 
-  def damaged: Player[_ <: Damaging, B, C] = copy[A with Damaging, B, C](velocity = -velocity, life = life - 1)
+  def damaged: Player[_ <: Damaging, B, C] = copy[Damaging, B, C](velocity = -velocity, life = life - 1)
 
   def shoot = copy[A with Shooting, B, C]() -> Bullet(this)
 
@@ -106,7 +94,7 @@ case class Player[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: 
       walk[Backward]
     else
       this
-    val jumped = (walked.status <:< manifest[Standing] && properties.input.isButtonPressed(0)).fold[P](walked.jump, walked)
+    val jumped = (walked.form <:< manifest[Standing] && properties.input.isButtonPressed(0)).fold[P](walked.jump, walked)
     val (shooted, bullet) = properties.input.isButtonPressed(2).fold[(P, Option[Bullet[_, _, _]])](jumped.shoot.mapElements(identity, _.some), jumped -> none)
     val moved = (shooted.status <:< manifest[Moving]).fold[P](shooted.move, shooted)
     val applied = moved.fix.fix.apply
