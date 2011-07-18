@@ -35,27 +35,7 @@ object ACT {
     'negi -> texture("items/negi.png"),
     'block -> texture("blocks/block.png"),
     'title -> texture("backgrounds/title.png"))
-/*
-  def texture[A, B](obj: GameplayObject[A, B])(implicit mfa: ClassManifest[A], mfb: ClassManifest[B]) = {
-    val state = mfa.erasure match {
-      case Walking.Class => "w"
-      case Jumping.Class => "j"
-      case _ => "n"
-    }
-    val direction = mfb.erasure match {
-      case Forward.Class => "f"
-      case Backward.Class => "b"
-      case Unknown.Class => ""
-    }
-    val char = obj match {
-      case _: Player[_, _] => "miku"
-      case _: Enemy[_, _] => "supu"
-      case _: Block[_, _] => "block"
-      case _: Bullet[_, _] => "negi"
-    }
-    char + state + direction + ".png"
-  }
-*/
+
   def init() {
     Display.setTitle(Title)
     val displayMode = Display.getAvailableDisplayModes.head
