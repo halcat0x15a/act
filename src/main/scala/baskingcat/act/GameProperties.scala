@@ -1,3 +1,3 @@
 package baskingcat.act
 
-case class GameProperties(size: Dimension[Float], input: Input)
+case class GameProperties(size: Dimension, input: Input)

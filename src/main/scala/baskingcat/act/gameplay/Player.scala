@@ -7,7 +7,7 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Player[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: Rectangle[Float], velocity: Vector2D[Float], life: Int)(implicit properties: GameProperties, val status: Manifest[A], val form: Manifest[B], val direction: Manifest[C]) extends GameObject with Live[A] with Walkable[A, B, C] with Jumpable[A, B, C] with Shootable[A, C] {
+case class Player[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: Rectangle, velocity: Vector2D, life: Int)(implicit properties: GameProperties, val status: Manifest[A], val form: Manifest[B], val direction: Manifest[C]) extends GameObject with Live[A] with Walkable[A, B, C] with Jumpable[A, B, C] with Shootable[A, C] {
 
   val speed: Float = 7f
 
@@ -15,11 +15,11 @@ case class Player[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: 
 
   lazy val bullet = Bullet[C](this)
 
-  def movable(bounds: Rectangle[Float]): Player[A, B, C] = copy(bounds = bounds.copy(location = bounds.location |+| velocity))
+  def movable(bounds: Rectangle): Player[A, B, C] = copy(bounds = bounds.copy(location = bounds.location |+| velocity))
 
-  def walkable[D <: Direction: Manifest](velocity: Vector2D[Float]): Player[Walking, B, D] = copy[Walking, B, D](velocity = velocity)
+  def walkable[D <: Direction: Manifest](velocity: Vector2D): Player[Walking, B, D] = copy[Walking, B, D](velocity = velocity)
 
-  def jumpable(velocity: Vector2D[Float]): Player[_ <: Jumping, _ <: Form, C] = copy[Jumping, Flying, C](velocity = velocity)
+  def jumpable(velocity: Vector2D): Player[_ <: Jumping, _ <: Form, C] = copy[Jumping, Flying, C](velocity = velocity)
 
   def shootable = copy[Shooting, B, C]()
 
@@ -128,7 +128,7 @@ object Player {
   val Regex = """player.*""".r
 
   def apply(x: Float, y: Float)(implicit properties: GameProperties) = {
-    new Player[Idling, Standing, Forward]('miku, Rectangle(Point(x, y), Dimension(Width, Height)), mzero[Vector2D[Float]], Life)
+    new Player[Idling, Standing, Forward]('miku, Rectangle(Point(x, y), Dimension(Width, Height)), mzero[Vector2D], Life)
   }
 
 }

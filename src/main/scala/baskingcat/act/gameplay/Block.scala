@@ -5,7 +5,7 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Block(bounds: Rectangle[Float]) extends GameplayObject {
+case class Block(bounds: Rectangle) extends GameplayObject {
 
   lazy val name = 'block
 

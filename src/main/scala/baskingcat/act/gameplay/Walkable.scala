@@ -9,7 +9,7 @@ trait Walkable[A <: Status, B <: Form, C <: Direction] extends Movable[A, B, C] 
 
   val speed: Float
 
-  def walkable[D <: Direction: Manifest](velocity: Vector2D[Float]): GameObject
+  def walkable[D <: Direction: Manifest](velocity: Vector2D): GameObject
 
   def walk[D <: Direction: Manifest]: GameObject = {
     def v(signum: Int) = (velocity.x + Player.Acceleration * signum) |> (vx => (vx.abs > speed).fold(speed * signum, vx))

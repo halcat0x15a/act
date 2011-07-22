@@ -7,7 +7,7 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Bullet[A <: Status, B <: Form, C <: Direction](owner: GameObject with HasDirection[C], bounds: Rectangle[Float], velocity: Vector2D[Float], life: Int)(implicit val status: Manifest[A], val form: Manifest[B], val direction: Manifest[C]) extends GameObject with Live[A] with Movable[A, B, C] {
+case class Bullet[A <: Status, B <: Form, C <: Direction](owner: GameObject with HasDirection[C], bounds: Rectangle, velocity: Vector2D, life: Int)(implicit val status: Manifest[A], val form: Manifest[B], val direction: Manifest[C]) extends GameObject with Live[A] with Movable[A, B, C] {
 
   lazy val name = 'negi
 
@@ -15,7 +15,7 @@ case class Bullet[A <: Status, B <: Form, C <: Direction](owner: GameObject with
     Vector(move/* |> (_.live)*/)
   }
 
-  def movable(bounds: Rectangle[Float]): Bullet[A, B, C] = copy(bounds = bounds)
+  def movable(bounds: Rectangle): Bullet[A, B, C] = copy(bounds = bounds)
 
   def apply(implicit stage: Stage) = this
 
@@ -36,7 +36,7 @@ object Bullet {
 
   val Height: Float = 16
 
-  val Velocity: Vector2D[Float] = Vector2D(15, 0)
+  val Velocity: Vector2D = Vector2D(15, 0)
 
   val Life: Int = 1
 

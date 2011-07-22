@@ -9,17 +9,16 @@ package object act {
 
   def GameObjects(obj: GameObject*) = Vector(obj: _*)
 
-  type Point[A] = Vector2D[A]
+  type Point = Vector2D
 
-  def Point[A](x: A, y: A)(implicit num: Numeric[A]) = Vector2D(x, y)
+  def Point(x: Float, y: Float) = Vector2D(x, y)
 
   def stream(name: String) = getClass.getClassLoader.getResourceAsStream(name)
 
-  implicit def Vector2DSemigroup[A](implicit num: Numeric[A]) = {
-    import num._
-    semigroup[Vector2D[A]]((a, b) => a + b)
-  }
+  implicit def Vector2DSemigroup = semigroup[Vector2D]((a, b) => a + b)
 
-  implicit def Vector2DZero[A](implicit num: Numeric[A]) = zero(Vector2D.Zero[A])
+  implicit def Vector2DZero = zero(Vector2D(0, 0))
+
+  implicit def DimensionZero = zero(Dimension(0, 0))
 
 }

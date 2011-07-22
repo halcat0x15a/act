@@ -4,9 +4,9 @@ import baskingcat.act._
 
 trait Movable[A <: Status, B <: Form, C <: Direction] extends HasStatus[A] with HasForm[B] with HasDirection[C] { obj: GameObject =>
 
-  val velocity: Vector2D[Float]
+  val velocity: Vector2D
 
-  def movable(bounds: Rectangle[Float]): GameObject
+  def movable(bounds: Rectangle): GameObject
 
   def move: GameObject = movable(bounds.copy(location = bounds.location + velocity))
 

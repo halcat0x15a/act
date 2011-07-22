@@ -11,6 +11,6 @@ abstract class GameObject {
 
   val name: Symbol
 
-  val bounds: Rectangle[Float]
+  val bounds: Rectangle
 
 }

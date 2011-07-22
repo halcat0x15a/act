@@ -6,7 +6,7 @@ trait Jumpable[A <: Status, B <: Form, C <: Direction] extends Movable[A, B, C] 
 
   val jumpPower: Float
 
-  def jumpable(velocity: Vector2D[Float]): GameObject
+  def jumpable(velocity: Vector2D): GameObject
 
   def jump: GameObject = jumpable(velocity.copy(y = -jumpPower))
 

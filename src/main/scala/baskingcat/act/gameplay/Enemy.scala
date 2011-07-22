@@ -5,7 +5,7 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Enemy[A <: Status, B <: Form, C <: Direction](bounds: Rectangle[Float], velocity: Vector2D[Float], life: Int)(implicit val status: Manifest[A], val form: Manifest[B], val direction: Manifest[C]) extends GameObject with Live[A] with Walkable[A, B, C] {
+case class Enemy[A <: Status, B <: Form, C <: Direction](bounds: Rectangle, velocity: Vector2D, life: Int)(implicit val status: Manifest[A], val form: Manifest[B], val direction: Manifest[C]) extends GameObject with Live[A] with Walkable[A, B, C] {
 
   type E = Enemy[_ <: Status, _ <: Form, _ <: Direction]
 
@@ -17,11 +17,11 @@ case class Enemy[A <: Status, B <: Form, C <: Direction](bounds: Rectangle[Float
     Vector(stage.objects.any(detect).fold[E](damaged, this))
   }
 
-  def movable(bounds: Rectangle[Float]) = copy(bounds = bounds)
+  def movable(bounds: Rectangle) = copy(bounds = bounds)
 
-  def walkable[D <: Direction: Manifest](velocity: Vector2D[Float]): Enemy[Walking, B, D] = copy[Walking, B, D](velocity = velocity)
+  def walkable[D <: Direction: Manifest](velocity: Vector2D): Enemy[Walking, B, D] = copy[Walking, B, D](velocity = velocity)
 
-  def apply(implicit stage: Stage): Enemy[A, B, C] = copy(velocity = mzero[Vector2D[Float]])
+  def apply(implicit stage: Stage): Enemy[A, B, C] = copy(velocity = mzero[Vector2D])
 
   def detect(obj: GameObject) = !obj.isInstanceOf[Block] && !obj.isInstanceOf[Enemy[_, _, _]] && obj.bounds.intersects(bounds)
 
@@ -42,7 +42,7 @@ object Enemy {
   val Regex = """enemy.*""".r
 
   def apply(x: Float, y: Float) = {
-    new Enemy[Idling, Standing, Backward](Rectangle(Point(x, y), Dimension(Width, Height)), Vector2D(0, 0), Life)
+    new Enemy[Idling, Standing, Backward](Rectangle(Point(x, y), Dimension(Width, Height)), mzero[Vector2D], Life)
   }
 
 }
