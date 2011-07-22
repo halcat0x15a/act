@@ -1,6 +1,10 @@
 package baskingcat.act.gameplay
 
-trait HasStatus[A <: Status]
+trait HasStatus[A <: Status] {
+
+  val status: Manifest[A]
+
+}
 
 sealed trait Status
 

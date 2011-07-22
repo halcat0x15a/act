@@ -1,6 +1,10 @@
 package baskingcat.act.gameplay
 
-trait HasForm[A <: Form]
+trait HasForm[A <: Form] {
+
+  val form: Manifest[A]
+
+}
 
 sealed trait Form
 

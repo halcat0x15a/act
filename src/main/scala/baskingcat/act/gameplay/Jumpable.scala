@@ -4,6 +4,10 @@ import baskingcat.act._
 
 trait Jumpable[A <: Status, B <: Form, C <: Direction] extends Movable[A, B, C] { obj: GameObject =>
 
-  def jump: Jumpable[_ <: Jumping, _ <: Form, C]
+  val jumpPower: Float
+
+  def jumpable(velocity: Vector2D[Float]): GameObject
+
+  def jump: GameObject = jumpable(velocity.copy(y = -jumpPower))
 
 }

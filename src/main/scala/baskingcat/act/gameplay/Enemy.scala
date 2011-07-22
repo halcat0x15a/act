@@ -5,7 +5,7 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Enemy[A <: Status, B <: Form, C <: Direction](bounds: Rectangle[Float], velocity: Vector2D[Float], life: Int)(implicit status: Manifest[A], form: Manifest[B], direction: Manifest[C]) extends GameObject with Live[A] with Walkable[A, B, C] {
+case class Enemy[A <: Status, B <: Form, C <: Direction](bounds: Rectangle[Float], velocity: Vector2D[Float], life: Int)(implicit val status: Manifest[A], val form: Manifest[B], val direction: Manifest[C]) extends GameObject with Live[A] with Walkable[A, B, C] {
 
   type E = Enemy[_ <: Status, _ <: Form, _ <: Direction]
 
@@ -17,9 +17,9 @@ case class Enemy[A <: Status, B <: Form, C <: Direction](bounds: Rectangle[Float
     Vector(stage.objects.any(detect).fold[E](damaged, this))
   }
 
-  def copyMovable(bounds: Rectangle[Float]) = copy(bounds = bounds)
+  def movable(bounds: Rectangle[Float]) = copy(bounds = bounds)
 
-  def walk[D <: Direction: Manifest]: Enemy[_ <: Walking, B, D] = copy[Walking, B, D](velocity = mzero[Vector2D[Float]])
+  def walkable[D <: Direction: Manifest](velocity: Vector2D[Float]): Enemy[Walking, B, D] = copy[Walking, B, D](velocity = velocity)
 
   def apply(implicit stage: Stage): Enemy[A, B, C] = copy(velocity = mzero[Vector2D[Float]])
 

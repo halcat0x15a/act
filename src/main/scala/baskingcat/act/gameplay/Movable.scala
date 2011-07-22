@@ -6,9 +6,9 @@ trait Movable[A <: Status, B <: Form, C <: Direction] extends HasStatus[A] with 
 
   val velocity: Vector2D[Float]
 
-  def copyMovable(bounds: Rectangle[Float]): GameObject
+  def movable(bounds: Rectangle[Float]): GameObject
 
-  def move: GameObject = copyMovable(bounds.copy(location = bounds.location + velocity))
+  def move: GameObject = movable(bounds.copy(location = bounds.location + velocity))
 
   def hcheck(obj: GameObject) = obj.bounds.left < bounds.right && obj.bounds.right > bounds.left
 

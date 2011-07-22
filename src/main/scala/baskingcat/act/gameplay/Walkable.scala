@@ -1,11 +1,20 @@
 package baskingcat.act.gameplay
 
+import scalaz._
+import Scalaz._
+
 import baskingcat.act._
 
 trait Walkable[A <: Status, B <: Form, C <: Direction] extends Movable[A, B, C] { obj: GameObject =>
 
   val speed: Float
 
-  def walk[D <: Direction: Manifest]: Walkable[_ <: Status, B, D]
+  def walkable[D <: Direction: Manifest](velocity: Vector2D[Float]): GameObject
+
+  def walk[D <: Direction: Manifest]: GameObject = {
+    def v(signum: Int) = (velocity.x + Player.Acceleration * signum) |> (vx => (vx.abs > speed).fold(speed * signum, vx))
+    val vx = (direction <:< manifest[Forward]).fold(v(1), v(-1))
+    walkable[D](velocity.copy(x = vx))
+  }
 
 }

@@ -1,6 +1,10 @@
 package baskingcat.act.gameplay
 
-trait HasDirection[A <: Direction]
+trait HasDirection[A <: Direction] {
+
+  val direction: Manifest[A]
+
+}
 
 sealed trait Direction
 

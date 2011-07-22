@@ -11,15 +11,17 @@ case class Player[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: 
 
   val speed: Float = 7f
 
-  def copyMovable(bounds: Rectangle[Float]): Player[A, B, C] = copy(bounds = bounds.copy(location = bounds.location |+| velocity))
+  val jumpPower: Float = 20f
 
-  def walk[D <: Direction: Manifest]: Player[_ <: Walking, B, D] = {
-    def v(signum: Int) = (velocity.x |+| Player.Acceleration * signum) |> (vx => (vx.abs > speed).fold(speed * signum, vx))
-    val vx = (manifest[C] <:< manifest[Forward]).fold(v(1), v(-1))
-    copy[Walking, B, D](velocity = velocity.copy(x = vx))
-  }
+  lazy val bullet = Bullet[C](this)
 
-  def jump: Player[_ <: Jumping, _ <: Form, C] = copy[Jumping, Flying, C](velocity = velocity.copy(y = -Player.JumpPower))
+  def movable(bounds: Rectangle[Float]): Player[A, B, C] = copy(bounds = bounds.copy(location = bounds.location |+| velocity))
+
+  def walkable[D <: Direction: Manifest](velocity: Vector2D[Float]): Player[Walking, B, D] = copy[Walking, B, D](velocity = velocity)
+
+  def jumpable(velocity: Vector2D[Float]): Player[_ <: Jumping, _ <: Form, C] = copy[Jumping, Flying, C](velocity = velocity)
+
+  def shootable = copy[Shooting, B, C]()
 
   def fix(obj: GameObject)(implicit stage: Stage): Player[A, B, C] = {
     lazy val groundTop = grounds.map(_.bounds.top).min
@@ -93,8 +95,6 @@ case class Player[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: 
 
   def damaged: Player[_ <: Damaging, B, C] = copy[Damaging, B, C](velocity = -velocity, life = life - 1)
 
-  def shoot = copy[Shooting, B, C]() -> Bullet(this)
-
   def update(implicit stage: Stage) = {
     val walked = if (properties.input.isControllerRight && rwalls.isEmpty)
       walk[Forward]
@@ -102,9 +102,9 @@ case class Player[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: 
       walk[Backward]
     else
       this
-    val jumped = (walked.form <:< manifest[Standing] && properties.input.isButtonPressed(0)).fold[Player.Type](walked.jump, walked)
-    val (shooted, bullet) = properties.input.isButtonPressed(1).fold[(Player.Type, Option[Bullet.Type])](jumped.shoot.mapElements(identity, _.some), jumped -> none)
-    val applied = fix(shooted.move).apply
+    val jumped = (walked.asInstanceOf[Player.Type].form <:< manifest[Standing] && properties.input.isButtonPressed(0)).fold[GameObject](walked.asInstanceOf[Player.Type].jump, walked)
+    val (shooted, bullet) = properties.input.isButtonPressed(1).fold[(GameObject, Option[Bullet.Type])](jumped.asInstanceOf[Player.Type].shoot.mapElements(identity, Some.apply), jumped -> none)
+    val applied = fix(shooted.asInstanceOf[Player.Type].move).apply
     val d = applied.live
     bullet.some(obj => Vector[GameObject](d, obj)).none(Vector[GameObject](d))
   }
