@@ -7,7 +7,7 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Stage(objects: GameplayObjects, size: Dimension[Float], viewport: Rectangle[Float])(implicit properties: GameProperties) {
+case class Stage(objects: GameObjects, size: Dimension[Float], viewport: Rectangle[Float])(implicit properties: GameProperties) {
 
   val gravity = 1.5f
 

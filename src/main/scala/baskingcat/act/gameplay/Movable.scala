@@ -2,13 +2,13 @@ package baskingcat.act.gameplay
 
 import baskingcat.act._
 
-trait Movable[A <: Status, B <: Form] extends HasStatus[A] with HasForm[B] { obj: GameplayObject =>
+trait Movable[A <: Status, B <: Form, C <: Direction] extends HasStatus[A] with HasForm[B] with HasDirection[C] { obj: GameObject =>
 
   val velocity: Vector2D[Float]
 
-  def move: Movable[A, B]
+  def copyMovable(bounds: Rectangle[Float]): GameObject
 
-  def apply(implicit stage: Stage): Movable[_ <: Status, _ <: Form]
+  def move: GameObject = copyMovable(bounds.copy(location = bounds.location + velocity))
 
   def hcheck(obj: GameObject) = obj.bounds.left < bounds.right && obj.bounds.right > bounds.left
 

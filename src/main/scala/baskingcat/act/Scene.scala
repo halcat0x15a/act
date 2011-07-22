@@ -4,7 +4,7 @@ abstract class Scene {
 
   val properties: GameProperties
 
-  val objects: Vector[GameObject]
+  val objects: GameObjects
 
   val bounds: Rectangle[Float]
 

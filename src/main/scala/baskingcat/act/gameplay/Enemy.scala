@@ -5,7 +5,7 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Enemy[A <: Status, B <: Form, C <: Direction](bounds: Rectangle[Float], velocity: Vector2D[Float], life: Int)(implicit status: Manifest[A], form: Manifest[B], direction: Manifest[C]) extends GameplayObject with Live[A] with Walkable[A, B, C] {
+case class Enemy[A <: Status, B <: Form, C <: Direction](bounds: Rectangle[Float], velocity: Vector2D[Float], life: Int)(implicit status: Manifest[A], form: Manifest[B], direction: Manifest[C]) extends GameObject with Live[A] with Walkable[A, B, C] {
 
   type E = Enemy[_ <: Status, _ <: Form, _ <: Direction]
 
@@ -17,13 +17,13 @@ case class Enemy[A <: Status, B <: Form, C <: Direction](bounds: Rectangle[Float
     Vector(stage.objects.any(detect).fold[E](damaged, this))
   }
 
-  def move = copy(bounds = bounds.copy(location = bounds.location |+| velocity))
+  def copyMovable(bounds: Rectangle[Float]) = copy(bounds = bounds)
 
   def walk[D <: Direction: Manifest]: Enemy[_ <: Walking, B, D] = copy[Walking, B, D](velocity = mzero[Vector2D[Float]])
 
   def apply(implicit stage: Stage): Enemy[A, B, C] = copy(velocity = mzero[Vector2D[Float]])
 
-  def detect(obj: GameplayObject) = !obj.isInstanceOf[Block] && !obj.isInstanceOf[Enemy[_, _, _]] && obj.bounds.intersects(bounds)
+  def detect(obj: GameObject) = !obj.isInstanceOf[Block] && !obj.isInstanceOf[Enemy[_, _, _]] && obj.bounds.intersects(bounds)
 
   def damaged = copy[Damaging, B, C](life = life - 1)
 

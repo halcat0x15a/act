@@ -7,11 +7,11 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Player[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: Rectangle[Float], velocity: Vector2D[Float], life: Int)(implicit properties: GameProperties, val status: Manifest[A], val form: Manifest[B], val direction: Manifest[C]) extends GameplayObject with Live[A] with Walkable[A, B, C] with Jumpable[A, B] with Shootable[A, C] {
+case class Player[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: Rectangle[Float], velocity: Vector2D[Float], life: Int)(implicit properties: GameProperties, val status: Manifest[A], val form: Manifest[B], val direction: Manifest[C]) extends GameObject with Live[A] with Walkable[A, B, C] with Jumpable[A, B, C] with Shootable[A, C] {
 
   val speed: Float = 7f
 
-  def move: Player[A, B, C] = copy(bounds = bounds.copy(location = bounds.location |+| velocity))
+  def copyMovable(bounds: Rectangle[Float]): Player[A, B, C] = copy(bounds = bounds.copy(location = bounds.location |+| velocity))
 
   def walk[D <: Direction: Manifest]: Player[_ <: Walking, B, D] = {
     def v(signum: Int) = (velocity.x |+| Player.Acceleration * signum) |> (vx => (vx.abs > speed).fold(speed * signum, vx))
@@ -21,7 +21,7 @@ case class Player[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: 
 
   def jump: Player[_ <: Jumping, _ <: Form, C] = copy[Jumping, Flying, C](velocity = velocity.copy(y = -Player.JumpPower))
 
-  def fix(implicit stage: Stage): Player[A, B, C] = {
+  def fix(obj: GameObject)(implicit stage: Stage): Player[A, B, C] = {
     lazy val groundTop = grounds.map(_.bounds.top).min
     lazy val ceilingBottom = ceilings.map(_.bounds.bottom).max
     lazy val vmargin = if (grounds.nonEmpty)
@@ -57,7 +57,7 @@ case class Player[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: 
     else
       Point(x, y)
     if ((hmargin /== 0) && (vmargin /== 0))
-      copy(bounds = bounds.copy(location = location)).fix
+      fix(copy(bounds = bounds.copy(location = location)))
     else
       this
   }
@@ -86,7 +86,7 @@ case class Player[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: 
       cp[Walking, Flying]
   }
 
-  def detect(obj: GameplayObject) = obj.bounds.intersects(bounds) && cond(obj) {
+  def detect(obj: GameObject) = obj.bounds.intersects(bounds) && cond(obj) {
     case _: Enemy.Type => true
     case b: Bullet.Type if !b.owner.isInstanceOf[Player.Type] => true
   }
@@ -104,9 +104,9 @@ case class Player[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: 
       this
     val jumped = (walked.form <:< manifest[Standing] && properties.input.isButtonPressed(0)).fold[Player.Type](walked.jump, walked)
     val (shooted, bullet) = properties.input.isButtonPressed(1).fold[(Player.Type, Option[Bullet.Type])](jumped.shoot.mapElements(identity, _.some), jumped -> none)
-    val applied = shooted.move.fix.apply
+    val applied = fix(shooted.move).apply
     val d = applied.live
-    bullet.some(obj => Vector[GameplayObject](d, obj)).none(Vector[GameplayObject](d))
+    bullet.some(obj => Vector[GameObject](d, obj)).none(Vector[GameObject](d))
   }
 
 }

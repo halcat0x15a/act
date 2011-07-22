@@ -5,6 +5,10 @@ import Scalaz._
 
 package object act {
 
+  type GameObjects = Vector[GameObject]
+
+  def GameObjects(obj: GameObject*) = Vector(obj: _*)
+
   type Point[A] = Vector2D[A]
 
   def Point[A](x: A, y: A)(implicit num: Numeric[A]) = Vector2D(x, y)

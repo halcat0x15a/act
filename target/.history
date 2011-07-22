@@ -411,3 +411,6 @@ compile
 exit
 compile
 exit
+compile
+git status
+exit

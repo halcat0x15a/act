@@ -7,19 +7,19 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Bullet[A <: Status, B <: Form, C <: Direction](owner: GameObject with HasDirection[C], bounds: Rectangle[Float], velocity: Vector2D[Float], life: Int)(implicit status: Manifest[A], form: Manifest[B], direction: Manifest[C]) extends GameplayObject with Live[A] with Movable[A, B] {
+case class Bullet[A <: Status, B <: Form, C <: Direction](owner: GameObject with HasDirection[C], bounds: Rectangle[Float], velocity: Vector2D[Float], life: Int)(implicit status: Manifest[A], form: Manifest[B], direction: Manifest[C]) extends GameObject with Live[A] with Movable[A, B, C] {
 
   lazy val name = 'negi
 
   def update(implicit stage: Stage) = {
-    Vector(move |> (_.live))
+    Vector(move/* |> (_.live)*/)
   }
 
-  def move = copy(bounds = bounds.copy(location = bounds.location |+| velocity))
+  def copyMovable(bounds: Rectangle[Float]): Bullet[A, B, C] = copy(bounds = bounds)
 
   def apply(implicit stage: Stage) = this
 
-  def detect(obj: GameplayObject): Boolean = obj.bounds.intersects(bounds) && cond(obj) {
+  def detect(obj: GameObject): Boolean = obj.bounds.intersects(bounds) && cond(obj) {
     case _: Block => true
     case _: Enemy.Type => true
   }

@@ -2,7 +2,7 @@ package baskingcat.act.gameplay
 
 import baskingcat.act._
 
-trait Walkable[A <: Status, B <: Form, C <: Direction] extends Movable[A, B] { obj: GameplayObject =>
+trait Walkable[A <: Status, B <: Form, C <: Direction] extends Movable[A, B, C] { obj: GameObject =>
 
   val speed: Float
 
