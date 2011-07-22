@@ -7,13 +7,19 @@ import baskingcat.act._
 
 trait Live[A <: Status] extends GameObject with HasStatus[A] {
 
+  val obstacles: TypeList
+
   val life: Int
 
-  def detect(obj: GameObject): Boolean
+  val resilience: Vector2D = mzero[Vector2D]
 
-  def damaged: Live[_ <: Damaging]
+  def live(velocity: Vector2D, life: Int): GameObject
 
-  def live(implicit stage: Stage) = stage.filteredObjects.any(detect).fold[GameObject](damaged, this)
+  def detect[A <: GameObject](obj: A)(implicit m: Manifest[A]): Boolean = obj.bounds.intersects(bounds) && obstacles.any(m <:< _)
+
+  def alive(implicit stage: Stage) = stage.filteredObjects.any(detect).fold[GameObject](damaged, this)
+
+  def damaged: GameObject = live(-resilience, life - 1)
 
   def isDead(implicit stage: Stage): Boolean = life <= 0 || !stage.bounds.intersects(bounds)
 

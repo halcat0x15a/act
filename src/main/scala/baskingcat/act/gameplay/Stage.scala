@@ -24,7 +24,7 @@ case class Stage(objects: GameObjects, size: Dimension, viewport: Rectangle)(imp
   val blocks = filteredObjects.filter(_.isInstanceOf[Block])
 
   val player = objects.collect {
-    case player: Player.Type => player
+    case player: Player => player
   }.headOption.err("Player not found")
 
 }
@@ -48,7 +48,7 @@ object Stage {
         } yield block
       }
     }.flatten.flatten
-    data.find(_.isInstanceOf[Player.Type]).map { player =>
+    data.find(_.isInstanceOf[Player]).map { player =>
       val y = player.bounds.bottom
       new Stage(Vector(data: _*), Dimension(elem \ "@width", elem \ "@height"), Rectangle(Point(0, y), properties.size))
     }.err("Player Not Found.")

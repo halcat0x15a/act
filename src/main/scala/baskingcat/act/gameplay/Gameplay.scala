@@ -35,7 +35,7 @@ case class Gameplay(stage: Stage)(implicit val properties: GameProperties) exten
       case _ => true
     }.map(identity)//flatMap(_.update(stage))
     val objects = update.first.apply(stage.partitionedObjects).fold(_ <+> _)
-    objects.find(_.isInstanceOf[Player.Type]).some[Scene] { player =>
+    objects.find(_.isInstanceOf[Player]).some[Scene] { player =>
       val location = {
         val x = coord(properties.size.width, stage.size.width, player.bounds.centerX)
         val y = coord(properties.size.height, stage.size.height, player.bounds.centerY)
