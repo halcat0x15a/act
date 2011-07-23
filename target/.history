@@ -424,3 +424,5 @@ compile
 clean
 compile
 exit
+compile
+exit

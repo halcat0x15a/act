@@ -9,7 +9,9 @@ import baskingcat.act._
 
 abstract class Bullet extends GameObject
 
-case class Negi[A <: Status, B <: Form, C <: Direction, D <: GameObject with HasDirection[C]](bounds: Rectangle, velocity: Vector2D, life: Int)(implicit val status: Manifest[A], val form: Manifest[B], val direction: Manifest[C], val owner: Manifest[D]) extends Bullet with Live[A] with Movable[A, B, C] {
+abstract class AbstractBullet[A <: Direction, B <: GameObject with HasDirection[A]](implicit val direction: Manifest[A], val owner: Manifest[B]) extends Bullet with HasDirection[A]
+
+case class Negi[A <: Status, B <: Form, C <: Direction, D <: GameObject with HasDirection[C]](bounds: Rectangle, velocity: Vector2D, life: Int)(implicit val status: Manifest[A], val form: Manifest[B], direction: Manifest[C], owner: Manifest[D]) extends AbstractBullet[C, D] with Live[A] with Movable[A, B, C] {
 
   val obstacles = typeList[Cons[Enemy, Cons[Block, Nil]]]
 

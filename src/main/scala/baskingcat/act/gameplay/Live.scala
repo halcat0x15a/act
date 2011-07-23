@@ -15,7 +15,12 @@ trait Live[A <: Status] extends GameObject with HasStatus[A] {
 
   def live(velocity: Vector2D, life: Int): GameObject
 
-  def detect[A <: GameObject](obj: A)(implicit m: Manifest[A]): Boolean = obj.bounds.intersects(bounds) && obstacles.any(m <:< _)
+  def detect[A <: GameObject](obj: A)(implicit m: Manifest[A]): Boolean = {
+    lazy val b = obj.bounds.intersects(bounds) && obstacles.any(m <:< _)
+    obj match {
+      case ab: AbstractBullet[_, _] => ab.owner.erasure.isInstance(this)
+    }
+  }
 
   def alive(implicit stage: Stage) = stage.filteredObjects.any(detect).fold[GameObject](damaged, this)
 
