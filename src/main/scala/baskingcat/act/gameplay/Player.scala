@@ -9,7 +9,9 @@ import baskingcat.act._
 
 abstract class Player extends GameObject
 
-case class Miku[A <: Status, C <: Direction](name: Symbol, bounds: Rectangle, velocity: Vector2D, life: Int)(implicit properties: GameProperties, val status: Manifest[A], val direction: Manifest[C]) extends Player with Live[A] with Walkable[A, C] with Jumpable[A, C] with Shootable[A, C] {
+case class Miku[A <: Status, B <: Direction](bounds: Rectangle, velocity: Vector2D, life: Int)(implicit val status: Manifest[A], val direction: Manifest[B]) extends Player with Live[A] with Walkable[A, B] with Jumpable[A, B] with Shootable[A, B] {
+
+  lazy val name = Symbol("miku" + statusSuffix[A] + directionSuffix[B])
 
   val obstacles = typeList[Cons[Enemy, Cons[Bullet, Nil]]]
 
@@ -19,98 +21,20 @@ case class Miku[A <: Status, C <: Direction](name: Symbol, bounds: Rectangle, ve
 
   val jumpPower: Float = 20f
 
-  lazy val bullet = Bullet[C, Miku[A, C]](this)
+  lazy val bullet = Bullet[B, Miku[A, B]](this)
 
-  def movable(bounds: Rectangle): Miku[A, C] = copy(bounds = bounds.copy(location = bounds.location |+| velocity))
+  def movable(bounds: Rectangle) = copy(bounds = bounds)
 
-  def walkable[D <: Direction: Manifest](velocity: Vector2D): Miku[Walking, D] = copy[Walking, D](velocity = velocity)
+  def walkable[A <: Status: Manifest, B <: Direction: Manifest](velocity: Vector2D) = copy[A, B](velocity = velocity)
 
-  def jumpable(velocity: Vector2D): Miku[_ <: Jumping, C] = copy[Jumping, C](velocity = velocity)
+  def jumpable[A <: Status: Manifest](velocity: Vector2D) = copy[A, B](velocity = velocity)
 
-  def shootable = copy[Shooting, C]()
+  def shootable[A <: Status: Manifest] = copy[A, B]()
 
-  def live(velocity: Vector2D, life: Int): Miku[Damaging, C] = copy[Damaging, C](velocity = velocity, life = life)
+  def live[A <: Status: Manifest](life: Int) = copy[A, B](life = life)
 
-  def fix(obj: GameObject)(implicit stage: Stage): Miku[A, C] = {
-    lazy val groundTop = grounds.map(_.bounds.top).min
-    lazy val ceilingBottom = ceilings.map(_.bounds.bottom).max
-    lazy val vmargin = if (grounds.nonEmpty)
-      bounds.bottom - groundTop
-    else if (ceilings.nonEmpty)
-      ceilingBottom - bounds.top
-    else
-      0
-    lazy val rwallLeft = rwalls.map(_.bounds.left).min
-    lazy val lwallRight = lwalls.map(_.bounds.right).max
-    lazy val hmargin = if (rwalls.nonEmpty)
-      bounds.right - rwallLeft
-    else if (lwalls.nonEmpty)
-      lwallRight - bounds.left
-    else
-      0
-    lazy val x = if (rwalls.nonEmpty)
-      rwallLeft - bounds.size.width
-    else if (lwalls.nonEmpty)
-      lwallRight
-    else
-      bounds.location.x
-    lazy val y = if (grounds.size > 0)
-      groundTop - bounds.size.height
-    else if (ceilings.size > 0)
-      ceilingBottom
-    else
-      bounds.location.y
-    lazy val location = if (vmargin < hmargin)
-      Point(bounds.location.x, y)
-    else if (hmargin < vmargin)
-      Point(x, bounds.location.y)
-    else
-      Point(x, y)
-    if ((hmargin /== 0) && (vmargin /== 0))
-      fix(copy(bounds = bounds.copy(location = location)))
-    else
-      this
-  }
-
-  def apply(implicit stage: Stage): Miku[_ <: Status, C] = {
-    val vx = if (lwalls.nonEmpty || rwalls.nonEmpty)
-      0f
-    else if (velocity.x > 0)
-      velocity.x - stage.friction
-    else if (velocity.x < 0)
-      velocity.x |+| stage.friction
-    else
-      velocity.x
-    val vy = (grounds.nonEmpty || (ceilings.nonEmpty && velocity.y < 0)) ? 0f | (velocity.y |+| stage.gravity)
-    def cp[D <: Status: Manifest] = this.copy[D, C](velocity = Vector2D(vx, vy))
-    if (grounds.nonEmpty)
-      if (vx === 0)
-        cp[Idling]
-      else
-        cp[Walking]
-    else if (status <:< manifest[Jumping])
-      cp[Jumping]
-    else if (vx === 0)
-      cp[Idling]
-    else
-      cp[Walking]
-  }
-
-  def update(implicit stage: Stage) = {
-    type M = Miku[_, _]
-    val walked = if (properties.input.isControllerRight && rwalls.isEmpty)
-      walk[Forward]
-    else if (properties.input.isControllerLeft && lwalls.isEmpty)
-      walk[Backward]
-    else
-      this
-    val jumped = (!(walked.asInstanceOf[M].status <:< manifest[Jumping]) && properties.input.isButtonPressed(0)).fold[GameObject](walked.asInstanceOf[M].jump, walked)
-    val (shooted, bullet) = properties.input.isButtonPressed(1).fold[(GameObject, Option[Bullet])](jumped.asInstanceOf[M].shoot.mapElements(identity, Some.apply), jumped -> none)
-    val applied = fix(shooted.asInstanceOf[M].move).apply
-    val d = applied.alive
-    bullet.some(obj => Vector[GameObject](d, obj)).none(Vector[GameObject](d))
-  }
-
+  /*
+*/
 }
 
 object Player {
@@ -126,7 +50,47 @@ object Player {
   val Regex = """player.*""".r
 
   def apply(x: Float, y: Float)(implicit properties: GameProperties) = {
-    new Miku[Idling, Forward]('miku, Rectangle(Point(x, y), Dimension(Width, Height)), mzero[Vector2D], Life)
+    new Miku[Idling, Forward](Rectangle(Point(x, y), Dimension(Width, Height)), mzero[Vector2D], Life)
+  }
+
+}
+
+trait PlayerUpdate extends GameplayObject[Miku[_, _]] {
+  /*
+  def apply: Miku[_ <: Status, B] = {
+    val vx = if (lwalls.nonEmpty || rwalls.nonEmpty)
+      0f
+    else if (velocity.x > 0)
+      velocity.x - stage.friction
+    else if (velocity.x < 0)
+      velocity.x |+| stage.friction
+    else
+      velocity.x
+    val vy = (grounds.nonEmpty || (ceilings.nonEmpty && velocity.y < 0)) ? 0f | (velocity.y |+| stage.gravity)
+    def cp[D <: Status: Manifest] = this.copy[D, B](velocity = Vector2D(vx, vy))
+  }
+*/
+  def update(obj: Miku[_, _]) = {
+    GameObjects(obj).map {
+      case p: Miku[_, _] => {
+        if (properties.input.isControllerRight && rwalls(p).isEmpty)
+          p.walk[Forward]
+        else if (properties.input.isControllerLeft && lwalls(p).isEmpty)
+          p.walk[Backward]
+        else
+          p
+      }
+    }.map {
+      case p: Miku[_, _] =>
+        (!(p.status <:< manifest[Jumping]) && properties.input.isButtonPressed(0)).fold[GameObject](p.jump, p)
+    }.flatMap {
+      case p: Miku[_, _] => properties.input.isButtonPressed(1).fold[(GameObject, Option[GameObject])](p.shoot.mapElements(identity, _.some), p -> none).toIndexedSeq
+    }.map {
+      case p: Miku[_, _] => fix(p.move)
+    }.map {
+      case p: Miku[_, _] => check(p)
+    }
+    //apply
   }
 
 }

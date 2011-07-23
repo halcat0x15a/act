@@ -5,11 +5,11 @@ import Scalaz._
 
 import baskingcat.act._
 
-case class Block(bounds: Rectangle) extends GameplayObject {
+abstract class Block extends GameObject
+
+case class NormalBlock(bounds: Rectangle) extends Block {
 
   lazy val name = 'block
-
-  def update(implicit stage: Stage) = Vector(this)
 
 }
 
@@ -20,7 +20,7 @@ object Block {
   val Height = 32f
 
   def apply(x: Float, y: Float) = {
-    new Block(Rectangle(Point(x, y), Dimension(Width, Height)))
+    new NormalBlock(Rectangle(Point(x, y), Dimension(Width, Height)))
   }
 
 }

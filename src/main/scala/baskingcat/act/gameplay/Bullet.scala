@@ -9,23 +9,21 @@ import baskingcat.act._
 
 abstract class Bullet extends GameObject
 
-abstract class AbstractBullet[A <: Direction, B <: GameObject with HasDirection[A]](implicit val direction: Manifest[A], val owner: Manifest[B]) extends Bullet with HasDirection[A]
+trait HasOwner[A <: Direction, B <: GameObject with HasDirection[A]] extends HasDirection[A] {
 
-case class Negi[A <: Status, C <: Direction, D <: GameObject with HasDirection[C]](bounds: Rectangle, velocity: Vector2D, life: Int)(implicit val status: Manifest[A], direction: Manifest[C], owner: Manifest[D]) extends AbstractBullet[C, D] with Live[A] with Movable[A, C] {
+  val owner: Manifest[B]
+
+}
+
+case class Negi[A <: Status, B <: Direction, C <: GameObject with HasDirection[B]](bounds: Rectangle, velocity: Vector2D, life: Int)(implicit val status: Manifest[A], val direction: Manifest[B], val owner: Manifest[C]) extends Bullet with HasOwner[B, C] with Live[A] with Movable[A, B] {
 
   val obstacles = typeList[Cons[Enemy, Cons[Block, Nil]]]
 
   lazy val name = 'negi
 
-  def update(implicit stage: Stage) = {
-    Vector(move/* |> (_.live)*/)
-  }
+  def movable(bounds: Rectangle) = copy(bounds = bounds)
 
-  def movable(bounds: Rectangle): Negi[A, C, D] = copy(bounds = bounds)
-
-  def live(velocity: Vector2D, life: Int): Negi[Damaging, C, D] = copy[Damaging, C, D](velocity = velocity, life = life)
-
-  def apply(implicit stage: Stage) = this
+  def live[A <: Status: Manifest](life: Int) = copy[A, B, C](life = life)
 
 }
 

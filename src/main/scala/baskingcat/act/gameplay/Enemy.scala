@@ -15,17 +15,11 @@ case class Supu[A <: Status, C <: Direction](bounds: Rectangle, velocity: Vector
 
   lazy val name = 'supu
 
-  def update(implicit stage: Stage) = {
-    Vector(stage.objects.any(detect).fold[GameObject](damaged, this))
-  }
-
   def movable(bounds: Rectangle) = copy(bounds = bounds)
 
-  def walkable[D <: Direction: Manifest](velocity: Vector2D): Supu[Walking, D] = copy[Walking, D](velocity = velocity)
+  def walkable[A <: Status: Manifest, B <: Direction: Manifest](velocity: Vector2D) = copy[A, B](velocity = velocity)
 
-  def live(velocity: Vector2D, life: Int): Supu[Damaging, C] = copy[Damaging, C](velocity = velocity, life = life)
-
-  def apply(implicit stage: Stage): Supu[A, C] = copy(velocity = mzero[Vector2D])
+  def live[A <: Status: Manifest](life: Int) = copy[A, C](life = life)
 
 }
 

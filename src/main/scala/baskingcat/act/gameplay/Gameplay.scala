@@ -31,7 +31,7 @@ case class Gameplay(stage: Stage)(implicit val properties: GameProperties) exten
     Title()
   } else {
     val update = (_: GameObjects).withFilter {
-      case l: Live[_] => !l.isDead(stage)
+      //case l: Live[_] => !l.isDead(stage)
       case _ => true
     }.map(identity)//flatMap(_.update(stage))
     val objects = update.first.apply(stage.partitionedObjects).fold(_ <+> _)

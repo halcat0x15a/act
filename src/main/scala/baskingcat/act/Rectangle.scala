@@ -27,7 +27,11 @@ case class Rectangle(location: Point, size: Dimension) {
 
   def contains(rect: Rectangle) = rect.left >= left && rect.top >= top && rect.right <= right && rect.bottom <= bottom
 
-  def intersects(rect: Rectangle) = rect.right > left && rect.bottom > top && rect.left < right && rect.top < bottom
+  def intersectsh(rect: Rectangle) = rect.left < right && rect.right > left
+
+  def intersectsv(rect: Rectangle) = rect.top < bottom && rect.bottom > top
+
+  def intersects(rect: Rectangle) = intersectsh(rect) && intersectsv(rect)
 
 }
 
