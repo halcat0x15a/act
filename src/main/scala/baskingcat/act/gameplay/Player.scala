@@ -9,7 +9,7 @@ import baskingcat.act._
 
 abstract class Player extends GameObject
 
-case class Miku[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: Rectangle, velocity: Vector2D, life: Int)(implicit properties: GameProperties, val status: Manifest[A], val form: Manifest[B], val direction: Manifest[C]) extends Player with Live[A] with Walkable[A, B, C] with Jumpable[A, B, C] with Shootable[A, C] {
+case class Miku[A <: Status, C <: Direction](name: Symbol, bounds: Rectangle, velocity: Vector2D, life: Int)(implicit properties: GameProperties, val status: Manifest[A], val direction: Manifest[C]) extends Player with Live[A] with Walkable[A, C] with Jumpable[A, C] with Shootable[A, C] {
 
   val obstacles = typeList[Cons[Enemy, Cons[Bullet, Nil]]]
 
@@ -19,19 +19,19 @@ case class Miku[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: Re
 
   val jumpPower: Float = 20f
 
-  lazy val bullet = Bullet[C, Miku[A, B, C]](this)
+  lazy val bullet = Bullet[C, Miku[A, C]](this)
 
-  def movable(bounds: Rectangle): Miku[A, B, C] = copy(bounds = bounds.copy(location = bounds.location |+| velocity))
+  def movable(bounds: Rectangle): Miku[A, C] = copy(bounds = bounds.copy(location = bounds.location |+| velocity))
 
-  def walkable[D <: Direction: Manifest](velocity: Vector2D): Miku[Walking, B, D] = copy[Walking, B, D](velocity = velocity)
+  def walkable[D <: Direction: Manifest](velocity: Vector2D): Miku[Walking, D] = copy[Walking, D](velocity = velocity)
 
-  def jumpable(velocity: Vector2D): Miku[_ <: Jumping, _ <: Form, C] = copy[Jumping, Flying, C](velocity = velocity)
+  def jumpable(velocity: Vector2D): Miku[_ <: Jumping, C] = copy[Jumping, C](velocity = velocity)
 
-  def shootable = copy[Shooting, B, C]()
+  def shootable = copy[Shooting, C]()
 
-  def live(velocity: Vector2D, life: Int): Miku[Damaging, B, C] = copy[Damaging, B, C](velocity = velocity, life = life)
+  def live(velocity: Vector2D, life: Int): Miku[Damaging, C] = copy[Damaging, C](velocity = velocity, life = life)
 
-  def fix(obj: GameObject)(implicit stage: Stage): Miku[A, B, C] = {
+  def fix(obj: GameObject)(implicit stage: Stage): Miku[A, C] = {
     lazy val groundTop = grounds.map(_.bounds.top).min
     lazy val ceilingBottom = ceilings.map(_.bounds.bottom).max
     lazy val vmargin = if (grounds.nonEmpty)
@@ -72,7 +72,7 @@ case class Miku[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: Re
       this
   }
 
-  def apply(implicit stage: Stage): Miku[_ <: Status, _ <: Form, C] = {
+  def apply(implicit stage: Stage): Miku[_ <: Status, C] = {
     val vx = if (lwalls.nonEmpty || rwalls.nonEmpty)
       0f
     else if (velocity.x > 0)
@@ -82,29 +82,29 @@ case class Miku[A <: Status, B <: Form, C <: Direction](name: Symbol, bounds: Re
     else
       velocity.x
     val vy = (grounds.nonEmpty || (ceilings.nonEmpty && velocity.y < 0)) ? 0f | (velocity.y |+| stage.gravity)
-    def cp[D <: Status: Manifest, E <: Form: Manifest] = this.copy[D, E, C](velocity = Vector2D(vx, vy))
+    def cp[D <: Status: Manifest] = this.copy[D, C](velocity = Vector2D(vx, vy))
     if (grounds.nonEmpty)
       if (vx === 0)
-        cp[Idling, Standing]
+        cp[Idling]
       else
-        cp[Walking, Standing]
+        cp[Walking]
     else if (status <:< manifest[Jumping])
-      cp[Jumping, Flying]
+      cp[Jumping]
     else if (vx === 0)
-      cp[Idling, Flying]
+      cp[Idling]
     else
-      cp[Walking, Flying]
+      cp[Walking]
   }
 
   def update(implicit stage: Stage) = {
-    type M = Miku[_, _, _]
+    type M = Miku[_, _]
     val walked = if (properties.input.isControllerRight && rwalls.isEmpty)
       walk[Forward]
     else if (properties.input.isControllerLeft && lwalls.isEmpty)
       walk[Backward]
     else
       this
-    val jumped = (walked.asInstanceOf[M].form <:< manifest[Standing] && properties.input.isButtonPressed(0)).fold[GameObject](walked.asInstanceOf[M].jump, walked)
+    val jumped = (!(walked.asInstanceOf[M].status <:< manifest[Jumping]) && properties.input.isButtonPressed(0)).fold[GameObject](walked.asInstanceOf[M].jump, walked)
     val (shooted, bullet) = properties.input.isButtonPressed(1).fold[(GameObject, Option[Bullet])](jumped.asInstanceOf[M].shoot.mapElements(identity, Some.apply), jumped -> none)
     val applied = fix(shooted.asInstanceOf[M].move).apply
     val d = applied.alive
@@ -126,7 +126,7 @@ object Player {
   val Regex = """player.*""".r
 
   def apply(x: Float, y: Float)(implicit properties: GameProperties) = {
-    new Miku[Idling, Standing, Forward]('miku, Rectangle(Point(x, y), Dimension(Width, Height)), mzero[Vector2D], Life)
+    new Miku[Idling, Forward]('miku, Rectangle(Point(x, y), Dimension(Width, Height)), mzero[Vector2D], Life)
   }
 
 }

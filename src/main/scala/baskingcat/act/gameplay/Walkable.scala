@@ -5,7 +5,7 @@ import Scalaz._
 
 import baskingcat.act._
 
-trait Walkable[A <: Status, B <: Form, C <: Direction] extends Movable[A, B, C] { obj: GameObject =>
+trait Walkable[A <: Status, C <: Direction] extends Movable[A, C] { obj: GameObject =>
 
   val speed: Float
 

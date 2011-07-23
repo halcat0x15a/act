@@ -426,3 +426,6 @@ compile
 exit
 compile
 exit
+clean
+compile
+exit

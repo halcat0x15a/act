@@ -11,7 +11,7 @@ abstract class Bullet extends GameObject
 
 abstract class AbstractBullet[A <: Direction, B <: GameObject with HasDirection[A]](implicit val direction: Manifest[A], val owner: Manifest[B]) extends Bullet with HasDirection[A]
 
-case class Negi[A <: Status, B <: Form, C <: Direction, D <: GameObject with HasDirection[C]](bounds: Rectangle, velocity: Vector2D, life: Int)(implicit val status: Manifest[A], val form: Manifest[B], direction: Manifest[C], owner: Manifest[D]) extends AbstractBullet[C, D] with Live[A] with Movable[A, B, C] {
+case class Negi[A <: Status, C <: Direction, D <: GameObject with HasDirection[C]](bounds: Rectangle, velocity: Vector2D, life: Int)(implicit val status: Manifest[A], direction: Manifest[C], owner: Manifest[D]) extends AbstractBullet[C, D] with Live[A] with Movable[A, C] {
 
   val obstacles = typeList[Cons[Enemy, Cons[Block, Nil]]]
 
@@ -21,9 +21,9 @@ case class Negi[A <: Status, B <: Form, C <: Direction, D <: GameObject with Has
     Vector(move/* |> (_.live)*/)
   }
 
-  def movable(bounds: Rectangle): Negi[A, B, C, D] = copy(bounds = bounds)
+  def movable(bounds: Rectangle): Negi[A, C, D] = copy(bounds = bounds)
 
-  def live(velocity: Vector2D, life: Int): Negi[Damaging, B, C, D] = copy[Damaging, B, C, D](velocity = velocity, life = life)
+  def live(velocity: Vector2D, life: Int): Negi[Damaging, C, D] = copy[Damaging, C, D](velocity = velocity, life = life)
 
   def apply(implicit stage: Stage) = this
 
@@ -44,7 +44,7 @@ object Bullet {
     val x = forward.fold(owner.bounds.right, owner.bounds.left - Width)
     val y = owner.bounds.top |+| owner.bounds.size.height / 2 - Height / 2
     val v = forward.fold(Velocity, -Velocity)
-    new Negi[Moving, Flying, A, B](Rectangle(Point(x, y), Dimension(Width, Height)), v, Life)
+    new Negi[Moving, A, B](Rectangle(Point(x, y), Dimension(Width, Height)), v, Life)
   }
 
 }

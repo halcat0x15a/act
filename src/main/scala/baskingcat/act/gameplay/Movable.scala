@@ -2,7 +2,7 @@ package baskingcat.act.gameplay
 
 import baskingcat.act._
 
-trait Movable[A <: Status, B <: Form, C <: Direction] extends HasStatus[A] with HasForm[B] with HasDirection[C] { obj: GameObject =>
+trait Movable[A <: Status, C <: Direction] extends HasStatus[A] with HasDirection[C] { obj: GameObject =>
 
   val velocity: Vector2D
 

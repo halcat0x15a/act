@@ -7,7 +7,7 @@ import baskingcat.act._
 
 abstract class Enemy extends GameObject
 
-case class Supu[A <: Status, B <: Form, C <: Direction](bounds: Rectangle, velocity: Vector2D, life: Int)(implicit val status: Manifest[A], val form: Manifest[B], val direction: Manifest[C]) extends Enemy with Live[A] with Walkable[A, B, C] {
+case class Supu[A <: Status, C <: Direction](bounds: Rectangle, velocity: Vector2D, life: Int)(implicit val status: Manifest[A], val direction: Manifest[C]) extends Enemy with Live[A] with Walkable[A, C] {
 
   val obstacles = typeList[Cons[Bullet, Nil]]
 
@@ -21,11 +21,11 @@ case class Supu[A <: Status, B <: Form, C <: Direction](bounds: Rectangle, veloc
 
   def movable(bounds: Rectangle) = copy(bounds = bounds)
 
-  def walkable[D <: Direction: Manifest](velocity: Vector2D): Supu[Walking, B, D] = copy[Walking, B, D](velocity = velocity)
+  def walkable[D <: Direction: Manifest](velocity: Vector2D): Supu[Walking, D] = copy[Walking, D](velocity = velocity)
 
-  def live(velocity: Vector2D, life: Int): Supu[Damaging, B, C] = copy[Damaging, B, C](velocity = velocity, life = life)
+  def live(velocity: Vector2D, life: Int): Supu[Damaging, C] = copy[Damaging, C](velocity = velocity, life = life)
 
-  def apply(implicit stage: Stage): Supu[A, B, C] = copy(velocity = mzero[Vector2D])
+  def apply(implicit stage: Stage): Supu[A, C] = copy(velocity = mzero[Vector2D])
 
 }
 
@@ -40,7 +40,7 @@ object Enemy {
   val Regex = """enemy.*""".r
 
   def apply(x: Float, y: Float) = {
-    new Supu[Idling, Standing, Backward](Rectangle(Point(x, y), Dimension(Width, Height)), mzero[Vector2D], Life)
+    new Supu[Idling, Backward](Rectangle(Point(x, y), Dimension(Width, Height)), mzero[Vector2D], Life)
   }
 
 }
