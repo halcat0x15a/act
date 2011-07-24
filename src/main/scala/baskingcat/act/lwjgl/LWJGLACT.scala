@@ -21,7 +21,7 @@ import baskingcat.game.opengl
 
 import gameplay._
 
-object ACT {
+object LWJGLACT {
 
   private val Title = "Action Game"
 

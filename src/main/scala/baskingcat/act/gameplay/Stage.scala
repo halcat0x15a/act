@@ -39,8 +39,8 @@ object Stage {
       val x: Float = rect \ "@x"
       val y: Float = rect \ "@y"
       rect.attribute("id").map(_.text).map {
-        case Player.Regex() => Seq(Player(x, y))
-        case Enemy.Regex() => Seq(Enemy(x, y))
+        case Miku.Regex() => Seq(Miku(x, y))
+        case Supu.Regex() => Seq(Supu(x, y))
         case _ => for {
           i <- 0 until (rect \ "@width" / Block.Width).toInt
           j <- 0 until (rect \ "@height" / Block.Height).toInt

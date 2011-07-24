@@ -21,7 +21,7 @@ case class Supu[A <: Status, C <: Direction](bounds: Rectangle, velocity: Vector
 
 }
 
-object Enemy {
+object Supu {
 
   val Width: Float = 64
 

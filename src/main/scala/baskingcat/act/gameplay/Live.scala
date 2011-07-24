@@ -15,10 +15,10 @@ trait Live[A <: Status] extends GameObject with HasStatus[A] {
 
   def damaged: GameObject = live(life - 1)
 
-  def detect[A <: GameObject](obj: A)(implicit m: Manifest[A]): Boolean = {
-    lazy val b = obj.bounds.intersects(bounds) && obstacles.any(m <:< _)
+  def detect[A <: GameObject: Manifest](obj: A): Boolean = {
+    lazy val b = obj.bounds.intersects(bounds) && obstacles.any(manifest[A] <:< _)
     obj match {
-      case ab: HasOwner[_, _] => ab.owner.erasure.isInstance(this) && b
+      case ho: HasOwner[_] => ho.owner.erasure.isInstance(this) && b
       case _ => b
     }
   }

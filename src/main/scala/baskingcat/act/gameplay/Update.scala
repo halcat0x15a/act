@@ -11,7 +11,7 @@ trait Update[A <: GameObject] {
 
   val stage: Stage
 
-  implicit def update(obj: A): GameObjects
+  def update(obj: A): GameObjects
 
   def grounds(obj: GameObject) = stage.blocks.filter(block => block.bounds.top <= obj.bounds.bottom && block.bounds.bottom >= obj.bounds.bottom && obj.bounds.intersectsh(block.bounds))
 
