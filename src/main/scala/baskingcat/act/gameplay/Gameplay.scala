@@ -9,7 +9,7 @@ import baskingcat.act._
 import baskingcat.act.title.Title
 import baskingcat.game._
 
-case class Gameplay(stage: Stage)(implicit val properties: GameProperties) extends Scene {
+case class Gameplay(stage: Stage)(implicit val properties: GameProperties) extends Scene with PlayerUpdate {
 
   def this(name: String)(implicit properties: GameProperties) = this(Stage(name))
 
@@ -30,11 +30,13 @@ case class Gameplay(stage: Stage)(implicit val properties: GameProperties) exten
   def logic: Scene = if (properties.input.isButtonPressed(5)) {
     Title()
   } else {
-    val update = (_: GameObjects).withFilter {
-      //case l: Live[_] => !l.isDead(stage)
+    val f: GameObjects => GameObjects = (_: GameObjects).withFilter {
+      case l: Live[_] => !isDead(l)
       case _ => true
-    }.map(identity)//flatMap(_.update(stage))
-    val objects = update.first.apply(stage.partitionedObjects).fold(_ <+> _)
+    }.flatMap {
+      case m: Miku[_, _] => m
+    }
+    val objects = f.first.apply(stage.partitionedObjects).fold(_ ++ _)
     objects.find(_.isInstanceOf[Player]).some[Scene] { player =>
       val location = {
         val x = coord(properties.size.width, stage.size.width, player.bounds.centerX)

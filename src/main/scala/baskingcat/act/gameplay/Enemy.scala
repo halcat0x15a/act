@@ -15,9 +15,7 @@ case class Supu[A <: Status, C <: Direction](bounds: Rectangle, velocity: Vector
 
   lazy val name = 'supu
 
-  def movable(bounds: Rectangle) = copy(bounds = bounds)
-
-  def walkable[A <: Status: Manifest, B <: Direction: Manifest](velocity: Vector2D) = copy[A, B](velocity = velocity)
+  def movable[A <: Status: Manifest, B <: Direction: Manifest](bounds: Rectangle = bounds, velocity: Vector2D = velocity) = copy[A, B](bounds = bounds, velocity = velocity)
 
   def live[A <: Status: Manifest](life: Int) = copy[A, C](life = life)
 

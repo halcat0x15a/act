@@ -9,19 +9,19 @@ import baskingcat.act._
 
 abstract class Bullet extends GameObject
 
-trait HasOwner[A <: Direction, B <: GameObject with HasDirection[A]] extends HasDirection[A] {
+trait HasOwner[A <: Direction, B <: GameObject] extends HasDirection[A] {
 
   val owner: Manifest[B]
 
 }
 
-case class Negi[A <: Status, B <: Direction, C <: GameObject with HasDirection[B]](bounds: Rectangle, velocity: Vector2D, life: Int)(implicit val status: Manifest[A], val direction: Manifest[B], val owner: Manifest[C]) extends Bullet with HasOwner[B, C] with Live[A] with Movable[A, B] {
+case class Negi[A <: Status, B <: Direction, C <: GameObject](bounds: Rectangle, velocity: Vector2D, life: Int)(implicit val status: Manifest[A], val direction: Manifest[B], val owner: Manifest[C]) extends Bullet with HasOwner[B, C] with Live[A] with Movable[A, B] {
 
   val obstacles = typeList[Cons[Enemy, Cons[Block, Nil]]]
 
   lazy val name = 'negi
 
-  def movable(bounds: Rectangle) = copy(bounds = bounds)
+  def movable[A <: Status: Manifest, B <: Direction: Manifest](bounds: Rectangle = bounds, velocity: Vector2D = velocity) = copy[A, B, C](bounds = bounds, velocity = velocity)
 
   def live[A <: Status: Manifest](life: Int) = copy[A, B, C](life = life)
 
@@ -37,7 +37,7 @@ object Bullet {
 
   val Life: Int = 1
 
-  def apply[A <: Direction: Manifest, B <: GameObject with HasDirection[A]: Manifest](owner: B) = {
+  def apply[A <: Direction: Manifest, B <: GameObject: Manifest](owner: B) = {
     val forward = manifest[A] <:< manifest[Forward]
     val x = forward.fold(owner.bounds.right, owner.bounds.left - Width)
     val y = owner.bounds.top |+| owner.bounds.size.height / 2 - Height / 2

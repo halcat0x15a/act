@@ -6,8 +6,8 @@ trait Movable[A <: Status, B <: Direction] extends HasStatus[A] with HasDirectio
 
   val velocity: Vector2D
 
-  def movable(bounds: Rectangle): GameObject with Movable[A, B]
+  def movable[A <: Status: Manifest, B <: Direction: Manifest](bounds: Rectangle = bounds, velocity: Vector2D = velocity): GameObject with Movable[A, B]
 
-  def move: GameObject with Movable[A, B] = movable(bounds.copy(location = bounds.location + velocity))
+  def move = movable[A, B](bounds = bounds.copy(location = bounds.location + velocity))
 
 }

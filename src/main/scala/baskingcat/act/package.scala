@@ -5,7 +5,7 @@ import Scalaz._
 
 package object act {
 
-  type GameObjects = Vector[GameObject]
+  type GameObjects = Seq[GameObject]
 
   def GameObjects(obj: GameObject*) = Vector(obj: _*)
 

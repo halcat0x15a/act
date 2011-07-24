@@ -5,7 +5,7 @@ import Scalaz._
 
 trait HasStatus[A <: Status] {
 
-  val status: Manifest[A]
+  implicit val status: Manifest[A]
 
   def statusSuffix[A <: Status](implicit m: Manifest[A]) = if (m <:< manifest[Idling])
     "i"

@@ -5,17 +5,13 @@ import Scalaz._
 
 import baskingcat.act._
 
-trait GameplayObject[A <: GameObject] {
+trait Update[A <: GameObject] {
 
   val properties: GameProperties
 
   val stage: Stage
 
-  def update(obj: A): GameObjects
-
-  def isDead(live: GameObject with Live[_]) = live.life <= 0 || !stage.bounds.intersects(live.bounds)
-
-  def check(live: GameObject with Live[_]) = stage.filteredObjects.any(live.detect).fold[GameObject](live.damaged, live)
+  implicit def update(obj: A): GameObjects
 
   def grounds(obj: GameObject) = stage.blocks.filter(block => block.bounds.top <= obj.bounds.bottom && block.bounds.bottom >= obj.bounds.bottom && obj.bounds.intersectsh(block.bounds))
 
@@ -24,6 +20,19 @@ trait GameplayObject[A <: GameObject] {
   def rwalls(obj: GameObject) = stage.blocks.filter(block => block.bounds.left <= obj.bounds.right && block.bounds.right >= obj.bounds.right && obj.bounds.intersectsv(block.bounds))
 
   def lwalls(obj: GameObject) = stage.blocks.filter(block => block.bounds.right >= obj.bounds.left && block.bounds.left <= obj.bounds.left && obj.bounds.intersectsv(block.bounds))
+
+  def apply(obj: GameObject with Movable[_, _]) = {
+    val vx = if (lwalls(obj).nonEmpty || rwalls(obj).nonEmpty)
+      mzero[Float]
+    else if (obj.velocity.x > 0)
+      obj.velocity.x - stage.friction
+    else if (obj.velocity.x < 0)
+      obj.velocity.x |+| stage.friction
+    else
+      obj.velocity.x
+    val vy = (grounds(obj).nonEmpty || (ceilings(obj).nonEmpty && obj.velocity.y < 0)) ? 0f | (obj.velocity.y |+| stage.gravity)
+    obj.movable(velocity = Vector2D(vx, vy))
+  }
 
   def fix(obj: GameObject with Movable[_, _]): GameObject with Movable[_, _] = {
     (grounds(obj), ceilings(obj), lwalls(obj), rwalls(obj)) |> {
@@ -57,5 +66,11 @@ trait GameplayObject[A <: GameObject] {
       }
     }
   }
+
+  val movef = ((_: GameObject with Movable[_, _]).move) >>> apply _ >>> fix _
+
+  def isDead(live: GameObject with Live[_]) = live.life <= 0 || !stage.bounds.intersects(live.bounds)
+
+  def check(live: GameObject with Live[_]) = stage.filteredObjects.any(live.detect).fold[GameObject](live.damaged, live)
 
 }
