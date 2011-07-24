@@ -23,18 +23,12 @@ case class Miku[A <: Status, B <: Direction](bounds: Rectangle, velocity: Vector
 
   lazy val bullet = Bullet[B, Miku[A, B]](this)
 
-  def movable(bounds: Rectangle) = copy(bounds = bounds)
-
-  def walkable[A <: Status: Manifest, B <: Direction: Manifest](velocity: Vector2D) = copy[A, B](velocity = velocity)
-
-  def jumpable[A <: Status: Manifest](velocity: Vector2D) = copy[A, B](velocity = velocity)
+  def movable[A <: Status: Manifest, B <: Direction: Manifest](bounds: Rectangle = bounds, velocity: Vector2D = velocity) = copy[A, B](bounds = bounds, velocity = velocity)
 
   def shootable[A <: Status: Manifest] = copy[A, B]()
 
   def live[A <: Status: Manifest](life: Int) = copy[A, B](life = life)
 
-  /*
-*/
 }
 
 object Player {
@@ -55,22 +49,9 @@ object Player {
 
 }
 
-trait PlayerUpdate extends GameplayObject[Miku[_, _]] {
-  /*
-  def apply: Miku[_ <: Status, B] = {
-    val vx = if (lwalls.nonEmpty || rwalls.nonEmpty)
-      0f
-    else if (velocity.x > 0)
-      velocity.x - stage.friction
-    else if (velocity.x < 0)
-      velocity.x |+| stage.friction
-    else
-      velocity.x
-    val vy = (grounds.nonEmpty || (ceilings.nonEmpty && velocity.y < 0)) ? 0f | (velocity.y |+| stage.gravity)
-    def cp[D <: Status: Manifest] = this.copy[D, B](velocity = Vector2D(vx, vy))
-  }
-*/
-  def update(obj: Miku[_, _]) = {
+trait PlayerUpdate extends Update[Miku[_, _]] {
+
+  implicit def update(obj: Miku[_, _]) = {
     GameObjects(obj).map {
       case p: Miku[_, _] => {
         if (properties.input.isControllerRight && rwalls(p).isEmpty)
@@ -86,11 +67,10 @@ trait PlayerUpdate extends GameplayObject[Miku[_, _]] {
     }.flatMap {
       case p: Miku[_, _] => properties.input.isButtonPressed(1).fold[(GameObject, Option[GameObject])](p.shoot.mapElements(identity, _.some), p -> none).toIndexedSeq
     }.map {
-      case p: Miku[_, _] => fix(p.move)
+      case p: Miku[_, _] => movef(p)
     }.map {
       case p: Miku[_, _] => check(p)
     }
-    //apply
   }
 
 }

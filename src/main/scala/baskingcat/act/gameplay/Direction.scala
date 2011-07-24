@@ -5,7 +5,7 @@ import Scalaz._
 
 trait HasDirection[A <: Direction] {
 
-  val direction: Manifest[A]
+  implicit val direction: Manifest[A]
 
   def directionSuffix[A <: Direction](implicit m: Manifest[A]) = if (m <:< manifest[Forward])
     "f"
