@@ -5,15 +5,15 @@ import Scalaz._
 
 import baskingcat.act._
 
-trait Live[A <: Status] extends GameObject with HasStatus[A] {
+trait Live extends GameObject with HasStatus {
 
   val obstacles: TypeList
 
   val life: Int
 
-  def live[A <: Status: Manifest](life: Int): GameObject with Live[A]
+  def live(status: Status = status, life: Int = life): GameObject with Live
 
-  def damaged: GameObject = live(life - 1)
+  def damaged = live(life = life - 1)
 
   def detect[A <: GameObject: Manifest](obj: A): Boolean = {
     lazy val b = obj.bounds.intersects(bounds) && obstacles.any(manifest[A] <:< _)

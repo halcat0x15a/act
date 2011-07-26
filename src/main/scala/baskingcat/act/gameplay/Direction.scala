@@ -3,27 +3,19 @@ package baskingcat.act.gameplay
 import scalaz._
 import Scalaz._
 
-trait HasDirection[A <: Direction] {
+trait HasDirection {
 
-  implicit val direction: Manifest[A]
-
+  val direction: Direction
+/*
   def directionSuffix = direction match {
     case Forward.Manifest => "f"
     case Backward.Manifest => "b"
   }
-
+*/
 }
 
 sealed trait Direction
 
-trait Forward extends Direction
+case object Forward extends Direction
 
-object Forward {
-  val Manifest = manifest[Forward]
-}
-
-trait Backward extends Direction
-
-object Backward {
-  val Manifest = manifest[Backward]
-}
+case object Backward extends Direction

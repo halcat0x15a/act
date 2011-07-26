@@ -9,7 +9,7 @@ import baskingcat.act._
 
 abstract class Player extends GameObject
 
-case class Miku[A <: Status, B <: Direction](bounds: Rectangle, velocity: Vector2D, life: Int)(implicit val status: Manifest[A], val direction: Manifest[B]) extends Player with Live[A] with Walkable[A, B] with Jumpable[A, B] with Shootable[A, B] {
+case class Miku(status: Status, direction: Direction, bounds: Rectangle, velocity: Vector2D, life: Int) extends Player with Live with Walkable with Jumpable with Shootable {
 
   lazy val name = Symbol("miku")// + statusSuffix + directionSuffix)
 
@@ -21,13 +21,13 @@ case class Miku[A <: Status, B <: Direction](bounds: Rectangle, velocity: Vector
 
   val jumpPower: Float = 20f
 
-  lazy val bullet = Negi[B, Miku[A, B]](this)
+  lazy val bullet = Negi[Miku](this)
 
-  def movable[A <: Status: Manifest, B <: Direction: Manifest](bounds: Rectangle = bounds, velocity: Vector2D = velocity) = copy[A, B](bounds = bounds, velocity = velocity)
+  def live(status: Status = status, life: Int = life) = copy(status = status, life = life)
 
-  def shootable[A <: Status: Manifest] = copy[A, B]()
+  def movable(status: Status = status, dierction: Direction, bounds: Rectangle = bounds, velocity: Vector2D = velocity) = copy(status = status, direction = direction, bounds = bounds, velocity = velocity)
 
-  def live[A <: Status: Manifest](life: Int) = copy[A, B](life = life)
+  def shootable(status: Status = status) = copy(status = status)
 
 }
 
@@ -43,21 +43,21 @@ object Miku {
 
   val Regex = """player.*""".r
 
-  def apply(x: Float, y: Float)(implicit properties: GameProperties) = {
-    new Miku[Idling, Forward](Rectangle(Point(x, y), Dimension(Width, Height)), mzero[Vector2D], Life)
+  def apply(x: Float, y: Float) = {
+    new Miku(Idling, Forward, Rectangle(Point(x, y), Dimension(Width, Height)), mzero[Vector2D], Life)
   }
 
 }
 
-trait PlayerUpdate extends Update[Miku[_, _]] {
+trait PlayerUpdate extends Update[Miku] {
 
   implicit def MikuTo(obj: GameObject) = obj match {
-    case miku: Miku[_, _] => miku
+    case miku: Miku => miku
   }
 
-  def update(obj: Miku[_, _]) = {
+  def update(obj: Miku) = {
     GameObjects(obj).map { m =>
-      if (!(m.status <:< manifest[Jumping]) && properties.input.isButtonPressed(0))
+      if (!(m.status == Jumping) && properties.input.isButtonPressed(0))
 	m.jump
       else
 	m

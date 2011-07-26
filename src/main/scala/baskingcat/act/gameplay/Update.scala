@@ -21,7 +21,7 @@ trait Update[A <: GameObject] {
 
   def lwalls(obj: GameObject) = stage.blocks.filter(block => block.bounds.right >= obj.bounds.left && block.bounds.left <= obj.bounds.left && obj.bounds.intersectsv(block.bounds))
 
-  def apply(obj: GameObject with Movable[_, _]) = {
+  def apply(obj: GameObject with Movable) = {
     val vx = if (lwalls(obj).nonEmpty || rwalls(obj).nonEmpty)
       mzero[Float]
     else if (obj.velocity.x > 0)
@@ -34,7 +34,7 @@ trait Update[A <: GameObject] {
     obj.movable(velocity = Vector2D(vx, vy))
   }
 
-  def fix(obj: GameObject with Movable[_, _]): GameObject with Movable[_, _] = {
+  def fix(obj: GameObject with Movable): GameObject with Movable = {
     (grounds(obj), ceilings(obj), lwalls(obj), rwalls(obj)) |> {
       case (grounds, ceilings, lwalls, rwalls) => {
         lazy val groundst = grounds.map(_.bounds.top).min
@@ -60,17 +60,17 @@ trait Update[A <: GameObject] {
         else
           Point(x, y)
         if ((hmargin /== 0) && (vmargin /== 0))
-          fix(obj.movable(obj.bounds.copy(location = location)))
+          fix(obj.movable(bounds = obj.bounds.copy(location = location)))
         else
           obj
       }
     }
   }
 
-  val movef = ((_: GameObject with Movable[_, _]).move) >>> apply _ >>> fix _
+  val movef = ((_: GameObject with Movable).move) >>> apply _ >>> fix _
 
-  def isDead(live: GameObject with Live[_]) = live.life <= 0 || !stage.bounds.intersects(live.bounds)
+  def isDead(live: GameObject with Live) = live.life <= 0 || !stage.bounds.intersects(live.bounds)
 
-  def check(live: GameObject with Live[_]) = stage.filteredObjects.any(live.detect).fold[GameObject](live.damaged, live)
+  def check(live: GameObject with Live) = stage.filteredObjects.any(live.detect).fold[GameObject](live.damaged, live)
 
 }

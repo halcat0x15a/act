@@ -15,6 +15,4 @@ package object gameplay {
     typeList(manifest[A].typeArguments)
   }
 
-  def bool[A <: Bool: Manifest] = manifest[A] <:< manifest[True]
-
 }

@@ -3,10 +3,10 @@ package baskingcat.act.gameplay
 import scalaz._
 import Scalaz._
 
-trait HasStatus[A <: Status] {
+trait HasStatus {
 
-  implicit val status: Manifest[A]
-
+  val status: Status
+/*
   def statusSuffix = {
     val IM = manifest[Idling]
     val WM = manifest[Walking]
@@ -25,27 +25,17 @@ trait HasStatus[A <: Status] {
       case JSM => "js"
     }
   }
-
+*/
 }
 
 sealed trait Status
 
-trait Idling extends Status
+case object Idling extends Status
 
-trait Moving extends Status
+case object Jumping extends Status
 
-trait Jumping extends Moving
+case object Walking extends Status
 
-trait Walking extends Moving
+case object Damaging extends Status
 
-trait JWalking extends Walking with Jumping
-
-trait Damaging extends Status
-
-trait Shooting extends Status
-
-trait IShooting extends Shooting with Idling
-
-trait WShooting extends Shooting with Walking
-
-trait JShooting extends Shooting with Jumping
+case object Shooting extends Status

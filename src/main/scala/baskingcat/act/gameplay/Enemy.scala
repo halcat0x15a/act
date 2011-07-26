@@ -7,7 +7,7 @@ import baskingcat.act._
 
 abstract class Enemy extends GameObject
 
-case class Supu[A <: Status, C <: Direction](bounds: Rectangle, velocity: Vector2D, life: Int)(implicit val status: Manifest[A], val direction: Manifest[C]) extends Enemy with Live[A] with Walkable[A, C] {
+case class Supu(status: Status, direction: Direction, bounds: Rectangle, velocity: Vector2D, life: Int) extends Enemy with Live with Walkable {
 
   val obstacles = typeList[Cons[Bullet, Nil]]
 
@@ -15,9 +15,9 @@ case class Supu[A <: Status, C <: Direction](bounds: Rectangle, velocity: Vector
 
   lazy val name = 'supu
 
-  def movable[A <: Status: Manifest, B <: Direction: Manifest](bounds: Rectangle = bounds, velocity: Vector2D = velocity) = copy[A, B](bounds = bounds, velocity = velocity)
+  def movable(status: Status = status, dierction: Direction, bounds: Rectangle = bounds, velocity: Vector2D = velocity) = copy(status = status, direction = direction, bounds = bounds, velocity = velocity)
 
-  def live[A <: Status: Manifest](life: Int) = copy[A, C](life = life)
+  def live(status: Status = status, life: Int = life) = copy(status = status, life = life)
 
 }
 
@@ -32,7 +32,7 @@ object Supu {
   val Regex = """enemy.*""".r
 
   def apply(x: Float, y: Float) = {
-    new Supu[Idling, Backward](Rectangle(Point(x, y), Dimension(Width, Height)), mzero[Vector2D], Life)
+    new Supu(Idling, Backward, Rectangle(Point(x, y), Dimension(Width, Height)), mzero[Vector2D], Life)
   }
 
 }

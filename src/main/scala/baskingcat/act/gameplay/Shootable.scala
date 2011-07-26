@@ -5,22 +5,19 @@ import Scalaz._
 
 import baskingcat.act._
 
-trait Shootable[A <: Status, B <: Direction] extends HasStatus[A] with HasDirection[B] { obj: GameObject =>
+trait Shootable extends HasStatus with HasDirection { obj: GameObject =>
 
   val bullet: Bullet
 
-  def shootable[A <: Status: Manifest]: GameObject with Shootable[A, B]
+  def shootable(status: Status = status): GameObject with Shootable
 
-  def shoot: (GameObject with Shootable[_ <: Shooting, B], Bullet) = {
-    val s = if (status <:< manifest[Idling])
-      shootable[IShooting]
-    else if (status <:< manifest[Walking])
-      shootable[WShooting]
-    else if (status <:< manifest[Jumping])
-      shootable[JShooting]
-    else
-      undefined
-    s -> bullet
+  def shoot = {
+    val s = status match {
+      case Idling => Shooting
+      case Walking => Shooting
+      case Jumping => Shooting
+    }
+    shootable(s) -> bullet
   }
 
 }
