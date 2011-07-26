@@ -7,13 +7,23 @@ trait HasStatus[A <: Status] {
 
   implicit val status: Manifest[A]
 
-  def statusSuffix = status match {
-    case Idling.Manifest => "i"
-    case Walking.Manifest => "w"
-    case Jumping.Manifest => "j"
-    case IShooting.Manifest => "is"
-    case WShooting.Manifest => "ws"
-    case JShooting.Manifest => "js"
+  def statusSuffix = {
+    val IM = manifest[Idling]
+    val WM = manifest[Walking]
+    val JWM = manifest[JWalking]
+    val JM = manifest[Jumping]
+    val ISM = manifest[IShooting]
+    val WSM = manifest[WShooting]
+    val JSM = manifest[JShooting]
+    status match {
+      case IM => "i"
+      case WM => "w"
+      case JWM => "jw"
+      case JM => "j"
+      case ISM => "is"
+      case WSM => "ws"
+      case JSM => "js"
+    }
   }
 
 }
@@ -22,40 +32,20 @@ sealed trait Status
 
 trait Idling extends Status
 
-object Idling {
-  val Manifest = manifest[Idling]
-}
-
 trait Moving extends Status
-
-trait Walking extends Moving
-
-object Walking extends  {
-  val Manifest = manifest[Walking]
-}
 
 trait Jumping extends Moving
 
-object Jumping {
-  val Manifest = manifest[Jumping]
-}
+trait Walking extends Moving
+
+trait JWalking extends Walking with Jumping
 
 trait Damaging extends Status
 
-object Damaging {
-  val Manifest = manifest[Damaging]
-}
+trait Shooting extends Status
 
-trait Shooting[A <: Status] extends Status
+trait IShooting extends Shooting with Idling
 
-object IShooting {
-  val Manifest = manifest[Shooting[Idling]]
-}
+trait WShooting extends Shooting with Walking
 
-object WShooting {
-  val Manifest = manifest[Shooting[Jumping]]
-}
-
-object JShooting {
-  val Manifest = manifest[Shooting[Jumping]]
-}
+trait JShooting extends Shooting with Jumping

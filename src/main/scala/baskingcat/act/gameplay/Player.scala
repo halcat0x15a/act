@@ -56,24 +56,16 @@ trait PlayerUpdate extends Update[Miku[_, _]] {
   }
 
   def update(obj: Miku[_, _]) = {
-    GameObjects(obj).map {
-      case p: Miku[_, _] => {
-        if (properties.input.isControllerRight && rwalls(p).isEmpty)
-          p.walk[Forward]
-        else if (properties.input.isControllerLeft && lwalls(p).isEmpty)
-          p.walk[Backward]
-        else
-          p
-      }
-    }.map {
-      case p: Miku[_, _] =>
-        (!(p.status <:< manifest[Jumping]) && properties.input.isButtonPressed(0)).fold[GameObject](p.jump, p)
-    }.map {
-      case p: Miku[_, _] =>
-	if (properties.input.isButtonPressed(1))
-	  p.shoot.mapElements(identity, Some.apply)
-	else
-	p -> none
+    GameObjects(obj).map { m =>
+      if (!(m.status <:< manifest[Jumping]) && properties.input.isButtonPressed(0))
+	m.jump
+      else
+	m
+    }.map { m =>
+      if (properties.input.isButtonPressed(1))
+	m.shoot.mapElements(identity, _.some)
+      else
+	m -> none
     }.map {
       case (m, b) => movef(m) -> b
     }.map {

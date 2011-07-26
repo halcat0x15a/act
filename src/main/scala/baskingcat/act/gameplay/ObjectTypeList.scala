@@ -2,7 +2,7 @@ package baskingcat.act.gameplay
 
 import baskingcat.act._
 
-trait ObjectTypeList
+sealed trait ObjectTypeList
 
 trait Cons[X <: GameObject, XS <: ObjectTypeList] extends ObjectTypeList
 

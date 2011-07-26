@@ -11,10 +11,14 @@ trait Walkable[A <: Status, B <: Direction] extends Movable[A, B] { obj: GameObj
 
   val acceleration: Float = speed
 
-  def walk[A <: Direction: Manifest] = {
+  def walk[B <: Direction: Manifest] = {
     def v(signum: Int) = (velocity.x + acceleration * signum) |> (vx => (vx.abs > speed).fold(speed * signum, vx))
-    val vx = (direction <:< manifest[Forward]).fold(v(1), v(-1))
-    movable[Walking, A](velocity = velocity.copy(x = vx))
+    val vx = (manifest[B] <:< manifest[Forward]).fold(v(1), v(-1))
+    def cp[A <: Status: Manifest] = movable[A, B](velocity = velocity.copy(x = vx))
+    if (status <:< manifest[Jumping])
+      cp[JWalking]
+    else
+      cp[Walking]
   }
 
 }
