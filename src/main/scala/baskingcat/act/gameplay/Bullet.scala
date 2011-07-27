@@ -15,15 +15,21 @@ trait HasOwner[A <: GameObject] {
 
 }
 
-case class Negi[A <: GameObject with HasDirection](status: Status, direction: Direction, bounds: Rectangle, velocity: Vector2D, life: Int)(implicit val owner: Manifest[A]) extends Bullet with HasOwner[A] with Live with Movable {
+case class Negi[A <: GameObject with HasDirection[A]](status: Status, direction: Direction, bounds: Rectangle, velocity: Vector2D, life: Int)(implicit val owner: Manifest[A]) extends Bullet with HasOwner[A] with Live[Negi[A]] with Movable[Negi[A]] {
 
   val obstacles = typeList[Cons[Enemy, Cons[Block, Nil]]]
 
   lazy val name = 'negi
 
-  def movable(status: Status = status, dierction: Direction, bounds: Rectangle = bounds, velocity: Vector2D = velocity) = copy(status = status, direction = direction, bounds = bounds, velocity = velocity)
+  def status(status: Status): Negi[A] = copy(status = status)
 
-  def live(status: Status = status, life: Int = life) = copy(status = status, life = life)
+  def direction(dierction: Direction): Negi[A] = copy(direction = direction)
+
+  def life(life: Int): Negi[A] = copy(life = life)
+
+  def bounds(bounds: Rectangle): Negi[A] = copy(bounds = bounds)
+
+  def velocity(velocity: Vector2D): Negi[A] = copy(velocity = velocity)
 
 }
 
@@ -37,7 +43,7 @@ object Negi {
 
   val Life: Int = 1
 
-  def apply[A <: GameObject with HasDirection: Manifest](owner: A) = {
+  def apply[A <: GameObject with HasDirection[A]: Manifest](owner: A) = {
     val forward = owner.direction == Forward
     val x = forward.fold(owner.bounds.right, owner.bounds.left - Width)
     val y = owner.bounds.top + owner.bounds.size.height / 2 - Height / 2

@@ -31,7 +31,7 @@ case class Gameplay(stage: Stage)(implicit val properties: GameProperties) exten
     Title()
   } else {
     val f: GameObjects => GameObjects = (_: GameObjects).withFilter {
-      case l: Live => !isDead(l)
+//      case l: Live[_] => !isDead(l)
       case _ => true
     }.flatMap {
       case miku: Miku => update(miku)

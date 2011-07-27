@@ -7,7 +7,7 @@ import baskingcat.act._
 
 abstract class Enemy extends GameObject
 
-case class Supu(status: Status, direction: Direction, bounds: Rectangle, velocity: Vector2D, life: Int) extends Enemy with Live with Walkable {
+case class Supu(status: Status, direction: Direction, bounds: Rectangle, velocity: Vector2D, life: Int) extends Enemy with Live[Supu] with Walkable[Supu] {
 
   val obstacles = typeList[Cons[Bullet, Nil]]
 
@@ -15,9 +15,15 @@ case class Supu(status: Status, direction: Direction, bounds: Rectangle, velocit
 
   lazy val name = 'supu
 
-  def movable(status: Status = status, dierction: Direction, bounds: Rectangle = bounds, velocity: Vector2D = velocity) = copy(status = status, direction = direction, bounds = bounds, velocity = velocity)
+  def status(status: Status): Supu = copy(status = status)
 
-  def live(status: Status = status, life: Int = life) = copy(status = status, life = life)
+  def direction(dierction: Direction): Supu = copy(direction = direction)
+
+  def life(life: Int): Supu = copy(life = life)
+
+  def bounds(bounds: Rectangle): Supu = copy(bounds = bounds)
+
+  def velocity(velocity: Vector2D): Supu = copy(velocity = velocity)
 
 }
 

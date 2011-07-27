@@ -9,7 +9,7 @@ import baskingcat.act._
 
 abstract class Player extends GameObject
 
-case class Miku(status: Status, direction: Direction, bounds: Rectangle, velocity: Vector2D, life: Int) extends Player with Live with Walkable with Jumpable with Shootable {
+case class Miku(status: Status, direction: Direction, bounds: Rectangle, velocity: Vector2D, life: Int) extends Player with Live[Miku] with Walkable[Miku] with Jumpable[Miku] with Shootable[Miku] {
 
   lazy val name = Symbol("miku")// + statusSuffix + directionSuffix)
 
@@ -21,13 +21,17 @@ case class Miku(status: Status, direction: Direction, bounds: Rectangle, velocit
 
   val jumpPower: Float = 20f
 
-  lazy val bullet = Negi[Miku](this)
+  lazy val bullet = Negi(this)
 
-  def live(status: Status = status, life: Int = life) = copy(status = status, life = life)
+  def status(status: Status): Miku = copy(status = status)
 
-  def movable(status: Status = status, dierction: Direction, bounds: Rectangle = bounds, velocity: Vector2D = velocity) = copy(status = status, direction = direction, bounds = bounds, velocity = velocity)
+  def direction(dierction: Direction): Miku = copy(direction = direction)
 
-  def shootable(status: Status = status) = copy(status = status)
+  def life(life: Int): Miku = copy(life = life)
+
+  def bounds(bounds: Rectangle): Miku = copy(bounds = bounds)
+
+  def velocity(velocity: Vector2D): Miku = copy(velocity = velocity)
 
 }
 
@@ -51,26 +55,29 @@ object Miku {
 
 trait PlayerUpdate extends Update[Miku] {
 
-  implicit def MikuTo(obj: GameObject) = obj match {
-    case miku: Miku => miku
-  }
-
   def update(obj: Miku) = {
-    GameObjects(obj).map { m =>
+    obj |> { m =>
+      if (properties.input.isControllerRight && rwalls(m).isEmpty)
+	m.walk(Forward)
+      else if (properties.input.isControllerLeft && lwalls(m).isEmpty)
+	m.walk(Backward)
+      else
+	m
+    } |> { m =>
       if (!(m.status == Jumping) && properties.input.isButtonPressed(0))
 	m.jump
       else
 	m
-    }.map { m =>
+    } |> { m =>
       if (properties.input.isButtonPressed(1))
 	m.shoot.mapElements(identity, _.some)
       else
 	m -> none
-    }.map {
+    } |> {
       case (m, b) => movef(m) -> b
-    }.map {
+    } |> {
       case (m, b) => check(m) -> b
-    }.flatMap {
+    } |> {
       case (m, Some(b)) => GameObjects(m, b)
       case (m, None) => GameObjects(m)
     }

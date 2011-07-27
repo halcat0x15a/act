@@ -2,12 +2,14 @@ package baskingcat.act.gameplay
 
 import baskingcat.act._
 
-trait Movable extends HasStatus with HasDirection { obj: GameObject =>
+trait Movable[A <: GameObject with Movable[A]] extends HasStatus[A] with HasDirection[A] { obj: GameObject =>
 
   val velocity: Vector2D
 
-  def movable(status: Status = status, direction: Direction = direction, bounds: Rectangle = bounds, velocity: Vector2D = velocity): GameObject with Movable
+  def bounds(bounds: Rectangle): A
 
-  def move = movable(bounds = bounds.copy(location = bounds.location + velocity))
+  def velocity(velocity: Vector2D): A
+
+  def move = bounds(bounds.copy(location = bounds.location + velocity))
 
 }

@@ -3,9 +3,14 @@ package baskingcat.act.gameplay
 import scalaz._
 import Scalaz._
 
-trait HasStatus {
+import baskingcat.act._
+
+trait HasStatus[A <: GameObject with HasStatus[A]] { obj: GameObject =>
 
   val status: Status
+
+  def status(status: Status): A
+
 /*
   def statusSuffix = {
     val IM = manifest[Idling]

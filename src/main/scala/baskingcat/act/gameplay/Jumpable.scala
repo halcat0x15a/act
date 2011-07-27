@@ -2,10 +2,10 @@ package baskingcat.act.gameplay
 
 import baskingcat.act._
 
-trait Jumpable extends Movable { obj: GameObject =>
+trait Jumpable[A <: GameObject with Jumpable[A]] extends Movable[A] { obj: GameObject =>
 
   val jumpPower: Float
 
-  def jump = movable(status = Jumping, velocity = velocity.copy(y = -jumpPower))
+  def jump = velocity(velocity.copy(y = -jumpPower)).status(Jumping)
 
 }
